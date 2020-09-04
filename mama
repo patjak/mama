@@ -1,0 +1,11 @@
+#!/usr/bin/php
+<?php
+require_once("./src/ctldev.php");
+require_once("./src/mpower.php");
+require_once("./src/usbrly08.php");
+require_once("./src/machine.php");
+require_once("./src/settings.php");
+require_once("./src/util.php");
+require_once("./src/main.php");
+
+?>

@@ -1,0 +1,19 @@
+<settings>
+  <machine>
+    <name>jobs</name>
+    <mac>aa:aa:aa:bb:bb:bb</mac>
+    <ip/>
+    <is_started/>
+    <only_vm/>
+    <arch></arch>
+    <os></os>
+    <kernel>default</kernel>
+    <pwr_dev></pwr_dev>
+    <pwr_slot>0</pwr_slot>
+    <rly_dev></rly_dev>
+    <rly_slot>0</rly_slot>
+    <reservation/>
+    <resources/>
+    <boot_params/>
+  </machine>
+</settings>

@@ -1,5 +1,11 @@
 #!/usr/bin/php
 <?php
+
+if (!file_exists("/etc/mama.php")) {
+	echo "Failed to open mama config file: /etc/mama.php\n";
+	exit(1);
+}
+
 require_once("/etc/mama.php");
 
 // Allow machines without control devices

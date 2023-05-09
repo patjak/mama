@@ -2,8 +2,8 @@
 <?php
 
 if (!file_exists("/etc/mama.php")) {
-	echo "Failed to open mama config file: /etc/mama.php\n";
-	exit(1);
+	// If no mama config file exists we use sane defaults
+	define("MAMA_PATH", "/usr/share/mama");
 }
 
 require_once("/etc/mama.php");

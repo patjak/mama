@@ -55,7 +55,7 @@ class Arch {
 	static function get_buildable()
 	{
 		$archs = array();
-		$path = MAMA_PATH."/os/";
+		$path = MAMA_PATH."/os-description/";
 		$oses = Util::get_directory_contents($path, 2);
 
 		foreach ($oses as $os) {

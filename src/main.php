@@ -398,10 +398,12 @@ function cmd_run_os_build_script($args)
 	if ($code != 0)
 		fatal("Failed to remove old version of os: ".$target);
 
+	passthru("mkdir -p ".$target);
+
 	unset($code);
-	passthru("mv /tmp/mama-kiwi ".$target, $code);
+	passthru("mv /tmp/mama-kiwi/* ".$target, $code);
 	if ($code != 0)
-		fatal("Failed to copy new os build into machine directory");
+		fatal("Failed to store new os build");
 
 	unset($code);
 	passthru("cp ".$target."/*.initrd ".$target."/build/image-root/boot/initrd-mama", $code);

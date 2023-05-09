@@ -118,10 +118,10 @@ function cmd_list()
 	foreach ($machs as $mach) {
 		$pwr_dev = CtlDev::get_by_name($mach->pwr_dev);
 
-		if (!isset($pwr_devs[$mach->pwr_dev]))
+		if (isset($pwr_devs[$mach->pwr_dev]))
 			$pwr_devs[$mach->pwr_dev] = $pwr_dev->get_sensors_all_slots();
 
-		if ($pwr_devs[$mach->pwr_dev] === NULL) {
+		if (!isset($pwr_devs[$mach->pwr_dev]) || $pwr_devs[$mach->pwr_dev] === NULL) {
 			$power = "-";
 		} else {
 			$sensor = $pwr_devs[$mach->pwr_dev][$mach->pwr_slot - 1];

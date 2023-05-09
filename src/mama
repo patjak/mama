@@ -1,0 +1,19 @@
+#!/usr/bin/php
+<?php
+require_once("/etc/mama.php");
+
+// Allow machines without control devices
+new CtlDev("None/Empty", 0, "");
+
+define("SETTINGS_FILE", MAMA_PATH."/mama.xml");
+define("DEBUG", FALSE);
+require_once(MAMA_PATH."/src/ctldev.php");
+require_once(MAMA_PATH."/src/machine.php");
+require_once(MAMA_PATH."/src/settings.php");
+require_once(MAMA_PATH."/src/util.php");
+require_once(MAMA_PATH."/src/job.php");
+require_once(MAMA_PATH."/src/log.php");
+require_once(MAMA_PATH."/src/os.php");
+require_once(MAMA_PATH."/src/main.php");
+
+?>

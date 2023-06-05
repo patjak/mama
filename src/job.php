@@ -17,6 +17,7 @@ class Job {
 		$job = str_replace("\$ARCH", $arch, $job);
 		$job = str_replace("\$OS", $os, $job);
 		$job = str_replace("\$JOB", $this->name, $job);
+		$job = str_replace("\$MAMA_HOST", MAMA_HOST, $job);
 
 		return $this->execute($job);
 	}
@@ -39,6 +40,7 @@ class Job {
 		$job = str_replace("\$JOB", $this->name, $job);
 		$job = str_replace("\$MACH", $mach->name, $job);
 		$job = str_replace("\$MAMA_PATH", MAMA_PATH, $job);
+		$job = str_replace("\$MAMA_HOST", MAMA_HOST, $job);
 
 		return $this->execute($job, $mach);
 	}

@@ -112,6 +112,12 @@ class Settings {
 
 	public static function load()
 	{
+		if (!file_exists(SETTINGS_FILE)) {
+			passthru("cp ".MAMA_PATH."/mama.xml-default ".SETTINGS_FILE, $code);
+			if ($code != 0)
+				fatal("Failed to install the mama.xml file");
+		}
+
 		if (!file_exists(SETTINGS_FILE))
 			return FALSE;
 

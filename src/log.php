@@ -44,6 +44,13 @@ class Log {
 			else
 				$date = "";
 
+			unset($code);
+			if (!file_exists(self::$logfile)) {
+				passthru("touch ".self::$logfile." && chgrp mama ".self::$logfile." && chmod 660 ".self::$logfile, $code);
+				if ($code != 0)
+					fatal("Failed to create log file: ".self::$logfile);
+			}
+
 			$stream = fopen(self::$logfile, "a");
 			if ($stream === FALSE) {
 				error("Failed to open log: ".self::$logfile);

@@ -378,11 +378,11 @@ class Machine {
 		Settings::update_machine($this);
 
 		if ($status == "offline") {
-			if ($this->rly_dev != "None/Empty" || $this->rly_dev != "") {
+			if ($this->rly_dev != "") {
 				$this->set("power", 1);
 				$this->set("relay", 1);
 			} else {
-				if ($this->pwr_dev != "None/Empty" || $this->pwr_dev != "") {
+				if ($this->pwr_dev != "") {
 					if ($this->get("power") != 0) {
 						$this->set("power", 0);
 						sleep(self::$power_cycle_delay);
@@ -513,9 +513,9 @@ class Machine {
 		}
 
 		if ($status == "unreachable") {
-			if ($this->rly_dev != "None/Empty") {
+			if ($this->rly_dev != "") {
 				$this->set("relay", 8);
-			} else if ($this->pwr_dev != "None/Empty") {
+			} else if ($this->pwr_dev != "") {
 				$this->set("power", 0);
 			} else {
 				out("No control device available to turn off the machine");
@@ -528,7 +528,7 @@ class Machine {
 		}
 
 		if (!$this->wait_for_status("offline", self::$stop_timeout)) {
-			if ($this->rly_dev != "None/Empty")
+			if ($this->rly_dev != "")
 				$this->set("relay", self::$rly_force_off_delay);
 			if ($this->is_vm())
 				$this->kill_vm();

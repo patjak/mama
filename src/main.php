@@ -229,9 +229,9 @@ function cmd_new()
 		else
 			$rly_slot = 0;
 
-		$m->pwr_dev = $pwr_dev->name;
+		$m->pwr_dev = $pwr_dev->name == "- None -" ? "" : $pwr_dev->name;
 		$m->pwr_slot = $pwr_slot;
-		$m->rly_dev = $rly_dev->name;
+		$m->rly_dev = $rly_dev->name == "- None -" ? "" : $rly_dev->name;
 		$m->rly_slot = $rly_slot;
 	}
 

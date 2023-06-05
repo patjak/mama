@@ -356,6 +356,11 @@ class Machine {
 			return FALSE;
 		}
 
+		if ($this->os == "") {
+			error("No OS has been configured!");
+			return FALSE;
+		}
+
 		$arch = explode("/", $this->os)[0];
 		$os = explode("/", $this->os)[1];
 		if (!OS::is_runnable($arch, $os, $this)) {

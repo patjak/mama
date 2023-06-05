@@ -513,8 +513,10 @@ class Machine {
 		$status = $this->get_status();
 
 		if ($status == "online") {
-			out("Executing poweroff on machine");
-			$this->ssh_cmd("poweroff");
+			if ($this->is_vm())
+				$this->ssh_cmd("poweroff");
+			else
+				$this->ssh_cmd("halt");
 		}
 
 		if ($status == "unreachable") {

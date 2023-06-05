@@ -205,7 +205,8 @@ class Machine {
 		switch ($attr) {
 		case "power":
 			$dev = CtlDev::get_by_name($this->pwr_dev);
-			$dev->set_power($this->pwr_slot, $val);
+			if ($dev !== FALSE)
+				$dev->set_power($this->pwr_slot, $val);
 			break;
 		case "relay":
 			$dev = CtlDev::get_by_name($this->rly_dev);

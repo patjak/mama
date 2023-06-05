@@ -116,6 +116,14 @@ class Settings {
 			passthru("cp ".MAMA_PATH."/mama.xml-default ".SETTINGS_FILE, $code);
 			if ($code != 0)
 				fatal("Failed to install the mama.xml file");
+
+			passthru("chgrp mama ".SETTINGS_FILE, $code);
+			if ($code != 0)
+				fatal("Failed to set permission on mama.xml file");
+
+			passthru("chmod 660 ".SETTINGS_FILE, $code);
+			if ($code != 0)
+				fatal("Failed to set permission on mama.xml file");
 		}
 
 		if (!file_exists(SETTINGS_FILE))

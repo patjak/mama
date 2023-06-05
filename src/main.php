@@ -240,7 +240,7 @@ function cmd_new()
 	$m->arch = $arch;
 	$m->os = $os;
 	$m->state = "offline";
-	$m->kernel = "default";
+	$m->kernel = "";
 	$m->only_vm = $only_vm;
 
 	Settings::add_machine($m);
@@ -565,6 +565,9 @@ function select_kernel($mach)
 
 	$kernel = Util::ask_from_array($names, "Kernel:");
 
+	if ($kernel == "default")
+		$kernel = "";
+
 	return $kernel;
 }
 
@@ -767,7 +770,7 @@ function cmd_ipxe($argv)
 		"ip=".$client_ip."::".$server_ip.":255.255.255.0:".$mach->name.":bootnet:off ".
 		"systemd.hostname=".$mach->name;
 
-	if (strtolower($mach->kernel) == "default" || $mach->kernel == "") {
+	if ($mach->kernel == "") {
 		$kernel_filename = "kernel-mama";
 		$initrd_filename = "initrd-mama";
 	} else {

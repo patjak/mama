@@ -19,7 +19,7 @@ class Machine {
 		$rly_force_off_delay = 8,
 
 		// How long a machine must be powered off before being powered on again (in seconds)
-		$power_cycle_delay = 5,
+		$power_cycle_delay = 30,
 
 		// How long to wait for a resource to become available (in seconds)
 		$resource_wait_timeout = 20 * 60 * 60;
@@ -272,7 +272,7 @@ class Machine {
 
 		foreach ($data as $key => $val) {
 			if ($key == $attr) {
-				out("Getting: ".$attr." = ".$val);
+				debug("Getting: ".$attr." = ".$val);
 				return $val;
 			}
 		}
@@ -384,21 +384,20 @@ class Machine {
 		Settings::update_machine($this);
 
 		if ($status == "offline") {
-			if ($this->rly_dev != "") {
-				$this->set("power", 1);
-				$this->set("relay", 1);
-			} else {
-				if ($this->pwr_dev != "") {
-					if ($this->get("power") != 0) {
-						$this->set("power", 0);
-						sleep(self::$power_cycle_delay);
-					}
-					$this->set("power", 1);
-				} else {
-					out("No control device available to turn on the machine");
-					return FALSE;
+			if ($this->pwr_dev != "") {
+				if ($this->get("output (bool)") != 0) {
+					$this->set("power", 0);
+					out("Power was already on. Waiting: ".self::$power_cycle_delay." seconds");
+					sleep(self::$power_cycle_delay);
 				}
+				$this->set("power", 1);
+			} else if ($this->rly_dev == "") {
+				out("No control device available to turn on the machine");
+				return FALSE;
 			}
+
+			if ($this->rly_dev != "")
+				$this->set("relay", 1);
 		}
 
 

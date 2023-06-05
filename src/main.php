@@ -421,7 +421,7 @@ function cmd_run_os_build_script($args)
 
 	// Copy the authorized_keys file so ssh commands can be executed by mama
 	unset($code);
-	passthru("sudo mkdir -p ".$target."/build/image-root/root/.ssh && cp ".MAMA_PATH."/authorized_keys ".$target."/build/image-root/root/.ssh/", $code);
+	passthru("sudo mkdir -p ".$target."/build/image-root/root/.ssh && sudo cp ".MAMA_PATH."/authorized_keys ".$target."/build/image-root/root/.ssh/", $code);
 	if ($code != 0)
 		fatal("Failed to copy authorized_keys");
 

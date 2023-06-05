@@ -653,11 +653,6 @@ function cmd_start($arg)
 
 function cmd_start_vm($arg)
 {
-	if (!Util::is_root() === true) {
-		error("You must be root to start a VM");
-		return;
-	}
-
 	$mach = select_machine($arg);
 
 	if ($mach === false)

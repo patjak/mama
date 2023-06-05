@@ -434,10 +434,8 @@ class Machine {
 
 	public function start_vm()
 	{
-		if (!Util::is_root() === true) {
+		if (!Util::is_root() === true)
 			out("You must be root to start a VM");
-			return FALSE;
-		}
 
 		unset($out);
 		exec("ps aux | grep qemu | grep ".$this->mac, $out, $res);
@@ -491,7 +489,7 @@ class Machine {
 		if ($arch == $mama_arch)
 			$kvm_str = "-enable-kvm";
 
-		$cmd = "screen -d -m qemu-system-".$arch." ".$sys_str." ".$kvm_str." ".$cores_str." ".$net_str." -nographic -serial file:".Log::$logfile;
+		$cmd = "sudo screen -d -m qemu-system-".$arch." ".$sys_str." ".$kvm_str." ".$cores_str." ".$net_str." -nographic -serial file:".Log::$logfile;
 		debug($cmd);
 		passthru($cmd);
 

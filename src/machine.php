@@ -173,7 +173,8 @@ class Machine {
 		out("Kernel:\t\t".($this->kernel == "" ? "default" : $this->kernel));
 		out("Status:\t\t".$this->get_status());
 		out("Power device:\t".$this->pwr_dev.",".$this->pwr_slot);
-		out("Relay device:\t".$this->rly_dev.",".$this->rly_slot);
+		if ($this->rly_dev != "")
+			out("Relay device:\t".$this->rly_dev.",".$this->rly_slot);
 		out("Reserved by:\t".$this->reservation);
 		out("Resources:\t".$this->resources);
 		out("Boot params:\t".$this->boot_params);

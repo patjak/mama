@@ -323,11 +323,6 @@ function cmd_job($args)
 
 function cmd_build_os($args)
 {
-	if (!Util::is_root()) {
-		error("You must be root to run this command");
-		return;
-	}
-
 	if (!isset($args[3])) {
 		error("Not enough arguments");
 		return;
@@ -352,7 +347,7 @@ function cmd_build_os($args)
 	if ($mama_arch == $arch && $builder == "os-builder")
 		cmd_run_os_build_script($args);
 	else
-		passthru("mama job os-builder run ".$builder." ".$arch." ".$os);
+		passthru("sudo mama job os-builder run ".$builder." ".$arch." ".$os);
 }
 
 // This command builds a kiwi appliance from an existing os-description
@@ -361,10 +356,8 @@ function cmd_build_os($args)
 // job inside a VM for the architecture we need.
 function cmd_run_os_build_script($args)
 {
-	if (!Util::is_root()) {
-		error("You must be root to run this command");
-		return;
-	}
+	if (!Util::is_root())
+		out("You must be root to run this command");
 
 	if (!isset($args[3])) {
 		error("Not enough arguments");
@@ -386,51 +379,58 @@ function cmd_run_os_build_script($args)
 	$target = MAMA_PATH."/os/".$arch."/".$os;
 	$desc = MAMA_PATH."/os-descriptions/".$arch."/".$os;
 
-	passthru("rm -Rf /tmp/mama-kiwi");
+	passthru("sudo rm -Rf /tmp/mama-kiwi");
 
 	unset($code);
-	passthru("kiwi-ng --type=kis --debug system build --description ".$desc." --target-dir /tmp/mama-kiwi", $code);
+	passthru("sudo kiwi-ng --type=kis --debug system build --description ".$desc." --target-dir /tmp/mama-kiwi", $code);
 	if ($code != 0)
 		fatal("Failed to build os with kiwi");
 
 	unset($code);
-	passthru("rm -Rf ".$target, $code);
+	passthru("sudo rm -Rf ".$target, $code);
 	if ($code != 0)
 		fatal("Failed to remove old version of os: ".$target);
 
-	passthru("mkdir -p ".$target);
+	passthru("sudo mkdir -p ".$target);
 
 	unset($code);
-	passthru("mv /tmp/mama-kiwi/* ".$target, $code);
+	passthru("sudo mv /tmp/mama-kiwi/* ".$target, $code);
 	if ($code != 0)
 		fatal("Failed to store new os build");
 
 	unset($code);
-	passthru("cp ".$target."/*.initrd ".$target."/build/image-root/boot/initrd-mama", $code);
+	passthru("sudo cp ".$target."/*.initrd ".$target."/build/image-root/boot/initrd-mama", $code);
 	if ($code != 0)
 		fatal("Failed to create initrd default links for new os");
 
 	unset($code);
-	passthru("chmod 644 ".$target."/build/image-root/boot/initrd-mama", $code);
+	passthru("sudo chmod 644 ".$target."/build/image-root/boot/initrd-mama", $code);
 	if ($code != 0)
 		fatal("Failed to change permission on initrd");
 
 	unset($code);
-	passthru("cp ".$target."/*.kernel ".$target."/build/image-root/boot/kernel-mama", $code);
+	passthru("sudo cp ".$target."/*.kernel ".$target."/build/image-root/boot/kernel-mama", $code);
 	if ($code != 0)
 		fatal("Failed to create kernel default links for new os");
 
 	// Make sure the web server have permissions to serve the initrd
 	unset($code);
-	passthru("chmod 644 ".$target."/*initrd*", $code);
+	passthru("sudo chmod 644 ".$target."/*initrd*", $code);
 	if ($code != 0)
 		fatal("Failed to set permissions on initrd");
+
+	// Copy the authorized_keys file so ssh commands can be executed by mama
+	unset($code);
+	passthru("sudo mkdir -p ".$target."/build/image-root/root/.ssh && cp ".MAMA_PATH."/authorized_keys ".$target."/build/image-root/root/.ssh/", $code);
+	if ($code != 0)
+		fatal("Failed to copy authorized_keys");
+
 }
 
 function cmd_install_os($args)
 {
 	if (!Util::is_root())
-		fatal("You must be root to run this command");
+		out("You must be root to run this command");
 
 	if (!isset($args[4]))
 		fatal("Not enough arguments");
@@ -458,24 +458,21 @@ function cmd_install_os($args)
 	if (!Os::is_installable($arch, $os, $mach))
 		fatal("Invalid os");
 
-	$log_str = Log::$logfile !== FALSE ? " &>> ".Log::$logfile : "";
-	passthru("cd ".MAMA_PATH." && ./scripts/install-os.sh ".$machine." ".$arch." ".$os." ".$name." ".$log_str, $res);
-
 	$src = MAMA_PATH."/os/".$arch."/".$os;
 	$dst = MAMA_PATH."/machines/".$machine."/".$arch."/".$name;
 
 	unset($res);
-	passthru("rm -Rf ".$dst, $res);
+	passthru("sudo rm -Rf ".$dst, $res);
 	if ($res != 0)
 		fatal("Failed to remove previous installation of the OS");
 
 	unset($res);
-	passthru("mkdir -p ".$dst, $res);
+	passthru("sudo mkdir -p ".$dst, $res);
 	if ($res != 0)
 		fatal("Failed to create directory for new OS");
 
 	unset($res);
-	passthru("cp -r --reflink=auto ".$src."/build/image-root/* ".$dst, $res);
+	passthru("sudo cp -r --reflink=auto ".$src."/build/image-root/* ".$dst, $res);
 	if ($res != 0)
 		fatal("Failed to copy new OS to destination");
 

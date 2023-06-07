@@ -10,12 +10,13 @@ if (!file_exists("/etc/mama.php")) {
 	require_once("/etc/mama.php");
 }
 
+require_once(MAMA_PATH."/src/ctldev.php");
+
 // Allow machines without control devices
 new CtlDev("- None -", 0, "");
 
 define("SETTINGS_FILE", MAMA_PATH."/mama.xml");
 define("DEBUG", FALSE);
-require_once(MAMA_PATH."/src/ctldev.php");
 require_once(MAMA_PATH."/src/machine.php");
 require_once(MAMA_PATH."/src/settings.php");
 require_once(MAMA_PATH."/src/util.php");

@@ -343,11 +343,13 @@ function cmd_build_os($args)
 
 	$mama_arch = trim(shell_exec("uname -p"));
 
+	$need_sudo = Util::is_root() ? "" : "sudo";
+
 	// Build locally if we are on the same architecture and no builder machine is specified
 	if ($mama_arch == $arch && $builder == "os-builder")
 		cmd_run_os_build_script($args);
 	else
-		passthru("sudo mama job os-builder run ".$builder." ".$arch." ".$os);
+		passthru($need_sudo." mama job os-builder run ".$builder." ".$arch." ".$os);
 }
 
 // This command builds a kiwi appliance from an existing os-description
@@ -379,49 +381,51 @@ function cmd_run_os_build_script($args)
 	$target = MAMA_PATH."/os/".$arch."/".$os;
 	$desc = MAMA_PATH."/os-descriptions/".$arch."/".$os;
 
-	passthru("sudo rm -Rf /tmp/mama-kiwi");
+	$need_sudo = Util::is_root() ? "" : "sudo";
+
+	passthru($need_sudo." rm -Rf /tmp/mama-kiwi");
 
 	unset($code);
-	passthru("sudo kiwi-ng --type=kis --debug system build --description ".$desc." --target-dir /tmp/mama-kiwi", $code);
+	passthru($need_sudo." kiwi-ng --type=kis --debug system build --description ".$desc." --target-dir /tmp/mama-kiwi", $code);
 	if ($code != 0)
 		fatal("Failed to build os with kiwi");
 
 	unset($code);
-	passthru("sudo rm -Rf ".$target, $code);
+	passthru($need_sudo." rm -Rf ".$target, $code);
 	if ($code != 0)
 		fatal("Failed to remove old version of os: ".$target);
 
-	passthru("sudo mkdir -p ".$target);
+	passthru($need_sudo." mkdir -p ".$target);
 
 	unset($code);
-	passthru("sudo mv /tmp/mama-kiwi/* ".$target, $code);
+	passthru($need_sudo." mv /tmp/mama-kiwi/* ".$target, $code);
 	if ($code != 0)
 		fatal("Failed to store new os build");
 
 	unset($code);
-	passthru("sudo cp ".$target."/*.initrd ".$target."/build/image-root/boot/initrd-mama", $code);
+	passthru($need_sudo." cp ".$target."/*.initrd ".$target."/build/image-root/boot/initrd-mama", $code);
 	if ($code != 0)
 		fatal("Failed to create initrd default links for new os");
 
 	unset($code);
-	passthru("sudo chmod 644 ".$target."/build/image-root/boot/initrd-mama", $code);
+	passthru($need_sudo." chmod 644 ".$target."/build/image-root/boot/initrd-mama", $code);
 	if ($code != 0)
 		fatal("Failed to change permission on initrd");
 
 	unset($code);
-	passthru("sudo cp ".$target."/*.kernel ".$target."/build/image-root/boot/kernel-mama", $code);
+	passthru($need_sudo." cp ".$target."/*.kernel ".$target."/build/image-root/boot/kernel-mama", $code);
 	if ($code != 0)
 		fatal("Failed to create kernel default links for new os");
 
 	// Make sure the web server have permissions to serve the initrd
 	unset($code);
-	passthru("sudo chmod 644 ".$target."/*initrd*", $code);
+	passthru($need_sudo." chmod 644 ".$target."/*initrd*", $code);
 	if ($code != 0)
 		fatal("Failed to set permissions on initrd");
 
 	// Copy the authorized_keys file so ssh commands can be executed by mama
 	unset($code);
-	passthru("sudo mkdir -p ".$target."/build/image-root/root/.ssh && sudo cp ".MAMA_PATH."/authorized_keys ".$target."/build/image-root/root/.ssh/", $code);
+	passthru($need_sudo." mkdir -p ".$target."/build/image-root/root/.ssh && ".$need_sudo." cp ".MAMA_PATH."/authorized_keys ".$target."/build/image-root/root/.ssh/", $code);
 	if ($code != 0)
 		fatal("Failed to copy authorized_keys");
 
@@ -461,18 +465,20 @@ function cmd_install_os($args)
 	$src = MAMA_PATH."/os/".$arch."/".$os;
 	$dst = MAMA_PATH."/machines/".$machine."/".$arch."/".$name;
 
+	$need_sudo = Util::is_root() ? "" : "sudo";
+
 	unset($res);
-	passthru("sudo rm -Rf ".$dst, $res);
+	passthru($need_sudo." rm -Rf ".$dst, $res);
 	if ($res != 0)
 		fatal("Failed to remove previous installation of the OS");
 
 	unset($res);
-	passthru("sudo mkdir -p ".$dst, $res);
+	passthru($need_sudo." mkdir -p ".$dst, $res);
 	if ($res != 0)
 		fatal("Failed to create directory for new OS");
 
 	unset($res);
-	passthru("sudo cp -r --reflink=auto ".$src."/build/image-root/* ".$dst, $res);
+	passthru($need_sudo." cp -r --reflink=auto ".$src."/build/image-root/* ".$dst, $res);
 	if ($res != 0)
 		fatal("Failed to copy new OS to destination");
 

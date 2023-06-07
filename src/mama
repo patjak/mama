@@ -5,9 +5,10 @@ if (!file_exists("/etc/mama.php")) {
 	// If no mama config file exists we use sane defaults
 	define("MAMA_PATH", "/usr/share/mama");
 	define("MAMA_HOST", gethostbyname(gethostname()));
-}
 
-require_once("/etc/mama.php");
+} else {
+	require_once("/etc/mama.php");
+}
 
 // Allow machines without control devices
 new CtlDev("- None -", 0, "");

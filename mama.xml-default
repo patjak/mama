@@ -19,7 +19,7 @@
   </machine>
   <machine>
     <name>os-builder</name>
-    <mac>bb:bb:bb:cc:cc:cc</mac>
+    <mac>aa:bb:cc:11:22:33</mac>
     <ip/>
     <is_started/>
     <only_vm>1</only_vm>

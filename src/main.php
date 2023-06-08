@@ -489,10 +489,10 @@ function cmd_install_os($args)
 
 function cmd_copy_os($args)
 {
-	if (!Util::is_root()) {
+	if (!Util::is_root())
 		error("You must be root to run this command");
-		return;
-	}
+
+	$need_sudo = Util::is_root() ? "" : "sudo";
 
 	if (!isset($args[5])) {
 		error("Not enough arguments");
@@ -510,9 +510,9 @@ function cmd_copy_os($args)
 	}
 
 	out("Copying os ".$arch."/".$os." from ".$src_mach." to ".$dst_mach);
-	exec("rm -Rf ".MAMA_PATH."/machines/".$dst_mach."/".$arch."/".$os);
-	exec("mkdir -p ".MAMA_PATH."/machines/".$dst_mach."/".$arch."/".$os);
-	exec("cp -r --reflink=auto ".MAMA_PATH."/machines/".$src_mach."/".$arch."/".$os." ".
+	exec($need_sudo." rm -Rf ".MAMA_PATH."/machines/".$dst_mach."/".$arch."/".$os);
+	exec($need_sudo." mkdir -p ".MAMA_PATH."/machines/".$dst_mach."/".$arch."/".$os);
+	exec($need_sudo." cp -r --reflink=auto ".MAMA_PATH."/machines/".$src_mach."/".$arch."/".$os." ".
 	     MAMA_PATH."/machines/".$dst_mach."/".$arch."/");
 }
 

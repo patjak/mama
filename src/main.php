@@ -337,6 +337,10 @@ function cmd_build_os($args)
 	else
 		$builder = "os-builder";
 
+	$builder_mach = select_machine($builder);
+	if ($builder_mach === FALSE)
+		fatal("Invalid builder machine name");
+
 	if (!Arch::is_buildable($arch))
 		fatal("Invalid architecture: ".$arch);
 
@@ -348,7 +352,7 @@ function cmd_build_os($args)
 	$need_sudo = Util::is_root() ? "" : "sudo";
 
 	// Build locally if we are on the same architecture and no builder machine is specified
-	if ($mama_arch == $arch && $builder == "os-builder")
+	if ($mama_arch == $arch && $builder_mach->is_only_vm())
 		cmd_run_os_build_script($args);
 	else
 		passthru($need_sudo." mama job os-builder run ".$builder." ".$arch." ".$os);

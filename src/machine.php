@@ -548,7 +548,10 @@ class Machine {
 		}
 
 		// Always power off the machine
-		$this->set("power", 0);
+		if ($this->is_only_vm())
+			$this->kill_vm();
+		else
+			$this->set("power", 0);
 
 		// Clear the ip and is_started field in the xml
 		$this->ip = "";

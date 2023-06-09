@@ -40,35 +40,36 @@ class Settings {
 	// Implement our own file_get_contents() because we need locking
 	public static function get_contents()
 	{
-		$stream = fopen(SETTINGS_FILE, "r");
-		if ($stream === FALSE) {
-			error("Failed to open mama.xml");
-			return;
-		}
-
-		// We must clear the stat cache or the filesize gets wrong
-		clearstatcache(TRUE, SETTINGS_FILE);
-
 		// Sometimes the file fails to read and returns empty
 		// Retry a couple of times
 		for ($i = 0; $i < 5; $i++) {
-			$str = fread($stream, filesize(SETTINGS_FILE));
+			$stream = fopen(SETTINGS_FILE, "r");
+			if ($stream === FALSE) {
+				error("Failed to open mama.xml");
+			} else {
+				// We must clear the stat cache or the filesize gets wrong
+				clearstatcache(TRUE, SETTINGS_FILE);
 
-			if ($str === FALSE)
-				error("Failed to read mama.xml. Retrying: ".$i);
-			else
-				break;
+				$str = fread($stream, filesize(SETTINGS_FILE));
+				fclose($stream);
 
-			sleep(1);
+				if ($str === FALSE) {
+					error("Failed to read mama.xml");
+				} else {
+					if (strlen($str) != filesize(SETTINGS_FILE)) {
+						error("Size mismatch: ".strlen($str)." != ".filesize(SETTINGS_FILE));
+					} else {
+						// We finally have something that looks ok
+						break;
+					}
+				}
+			}
+
+			sleep(5);
+			out("Retrying... ".$i);
 		}
 
-		if (strlen($str) != filesize(SETTINGS_FILE)) {
-			error("Size mismatch: ".strlen($str)." != ".filesize(SETTINGS_FILE));
-			fatal("Failed to read the entire file");
-		}
-
-		fclose($stream);
-
+		// Double check that we got the entire file
 		if (strpos($str, "</settings>") === FALSE) {
 			error("Invalid mama.xml");
 			var_dump($str);

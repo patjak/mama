@@ -637,6 +637,9 @@ function cmd_info($arg)
 {
 	$mach = select_machine($arg);
 
+	// Don't log this command. It clutters up the log.
+	Log::set_file(FALSE);
+
 	if ($mach !== false)
 		$mach->print_info();
 }

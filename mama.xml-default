@@ -5,7 +5,7 @@
     <mac>aa:aa:aa:bb:bb:bb</mac>
     <ip/>
     <is_started/>
-    <only_vm/>
+    <only_vm>1</only_vm>
     <arch/>
     <os/>
     <kernel/>

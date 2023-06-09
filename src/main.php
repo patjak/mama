@@ -301,8 +301,10 @@ function cmd_job($args)
 			return;
 		}
 
+		$worker = isset($args[6]) ? $args[6] : "jobs";
+
 		$job = new Job($args[2]);
-		$job->execute_prepare_job($args[4], $args[5]);
+		$job->execute_prepare_job($args[4], $args[5], $worker);
 		break;
 
 	case "run":
@@ -355,7 +357,7 @@ function cmd_build_os($args)
 // This command builds a kiwi appliance from an existing os-description
 // It's supposed to be executed from the os-builder job since it only builds
 // appliances for the running host system architecture. Hence we run it as a
-// job inside a VM for the architecture we need.
+// job inside a VM or on a worker for the architecture we need.
 function cmd_run_os_build_script($args)
 {
 	if (!Util::is_root())
@@ -841,9 +843,9 @@ list-os	[machine]				- list available OSes
 list-kernel [machine]				- list available kernels
 list-jobs					- list available jobs
 log [machine]					- print log file
-job <job> prepare <arch> <os>			- Execute prepare part of job for arch and os
+job <job> prepare <arch> <os> [worker]		- Execute prepare part of job for arch and os
 job <job> run <machine>	<arch> <os>		- Execute job on specified machine
-build-os <arch> <os> [machine]			- build a deployable os locally or on specified machine
+build-os <arch> <os> [worker]			- build a deployable os locally or on specified machine
 install-os <machine> <arch> <os> [name]		- install os to a machine
 copy-os <src-mach> <arch> <os> <dst-mach>	- copy an os from one machine to another
 new						- add a new machine

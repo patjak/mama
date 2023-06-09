@@ -8,7 +8,7 @@ class Job {
 		$this->name = $name;
 	}
 
-	public function execute_prepare_job($arch, $os)
+	public function execute_prepare_job($arch, $os, $worker)
 	{
 		$job = file_get_contents(MAMA_PATH."/jobs/".$this->name."/prepare.job");
 		if ($job === FALSE)
@@ -18,8 +18,11 @@ class Job {
 		$job = str_replace("\$OS", $os, $job);
 		$job = str_replace("\$JOB", $this->name, $job);
 		$job = str_replace("\$MAMA_HOST", MAMA_HOST, $job);
+		$job = str_replace("\$WORKER", $worker, $job);
 
-		return $this->execute($job);
+		$worker_mach = select_machine($worker);
+
+		return $this->execute($job, FALSE, $worker_mach);
 	}
 
 	public function execute_run_job($mach, $arch, $os)
@@ -60,7 +63,7 @@ class Job {
 		return $str;
 	}
 
-	public function execute($job, $mach = FALSE)
+	public function execute($job, $mach = FALSE, $worker = FALSE)
 	{
 		$context = "";
 		$vm_mach = FALSE;
@@ -73,51 +76,25 @@ class Job {
 				$line = $this->parse_to_next("]", $line);
 
 				$old_context = $context;
-				$old_vm_mach = $vm_mach;
 
-				if ($line == "MAMA") {
+				if ($line == "MAMA")
 					$context = "MAMA";
-				} else if ($line == "DEVICE") {
+				else if ($line == "DEVICE")
 					$context = "DEVICE";
-				} else if ($this->parse_to_next(" ", $line) == "VM") {
-					$context = "VM";
-
-					if ($line != "") {
-						$vm_mach = select_machine($line);
-						if ($vm_mach === FALSE) {
-							error("Failed to find machine: ".$vm_name);
-							return FALSE;
-						}
-					} else {
-						$vm_mach = $mach;
-					}
-				}
+				else if ($line == "WORKER")
+					$context = "WORKER";
 
 				out("Switching to context: ".$context." ".($context == "VM" ? $vm_mach->name : ""));
 
-				// When switching between VMs and DEVICEs we must also start and stop the machines
+				// When switching between WORKERs and DEVICEs we must also start and stop the machines
 				if ($old_context != $context) {
 					if ($old_context == "DEVICE") {
 						if (!$mach->stop())
 							return FALSE;
 					}
 
-					if ($old_context == "VM") {
-						if (!$vm_mach->stop())
-							return FALSE;
-					}
-
-					if ($context == "VM") {
-						if ($vm_mach == FALSE) {
-							out("No machine specified. A VM name must be provided in a prepare job");
-							return FALSE;
-						}
-
-						// Make sure the VM is stopped before starting
-						if (!$vm_mach->stop())
-							return FALSE;
-
-						if (!$vm_mach->start_vm())
+					if ($old_context == "WORKER") {
+						if (!$worker->stop())
 							return FALSE;
 					}
 
@@ -126,8 +103,27 @@ class Job {
 						if (!$mach->stop())
 							return FALSE;
 
-						if (!$mach->start())
+						if ($mach->is_only_vm()) {
+							if (!$mach->start_vm())
+								return FALSE;
+						} else {
+							if (!$mach->start())
+								return FALSE;
+						}
+
+					}
+
+					if ($context == "WORKER") {
+						if (!$worker->stop())
 							return FALSE;
+
+						if ($worker->is_only_vm()) {
+							if (!$worker->start_vm())
+								return FALSE;
+						} else {
+							if (!$worker->start())
+								return FALSE;
+						}
 					}
 				}
 
@@ -152,26 +148,17 @@ class Job {
 				}
 			}
 
-			if ($context == "VM") {
-				$res = $vm_mach->ssh_cmd($line);
-				if ($res != 0) {
-					if ($res == 124)
-						error("EXECUTION TIMEOUT: ".$line);
-					else
-						error("EXECUTION FAILED: ".$line);
-					break;
-				}
-			}
-
-			if ($context == "DEVICE") {
+			if ($context == "DEVICE")
 				$res = $mach->ssh_cmd($line);
-				if ($res != 0) {
-					if ($res == 124)
-						error("EXECUTION TIMEOUT: ".$line);
-					else
-						error("EXECUTION FAILED: ".$line);
-					break;
-				}
+			else if ($context == "WORKER")
+				$res = $worker->ssh_cmd($line);
+
+			if ($res != 0) {
+				if ($res == 124)
+					error("EXECUTION TIMEOUT: ".$line);
+				else
+					error("EXECUTION FAILED: ".$line);
+				break;
 			}
 		}
 
@@ -179,8 +166,8 @@ class Job {
 
 		if ($mach !== FALSE)
 			$mach->stop();
-		if ($vm_mach !== FALSE)
-			$vm_mach->stop();
+		if ($worker !== FALSE)
+			$worker->stop();
 
 		return TRUE;
 	}

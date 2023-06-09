@@ -22,7 +22,10 @@ class Job {
 
 		$worker_mach = select_machine($worker);
 
-		return $this->execute($job, FALSE, $worker_mach);
+		$ret = $this->execute($job, FALSE, $worker_mach);
+		$worker_mach->stop();
+
+		return $ret;
 	}
 
 	public function execute_run_job($mach, $arch, $os)
@@ -45,7 +48,10 @@ class Job {
 		$job = str_replace("\$MAMA_PATH", MAMA_PATH, $job);
 		$job = str_replace("\$MAMA_HOST", MAMA_HOST, $job);
 
-		return $this->execute($job, $mach);
+		$ret = $this->execute($job, $mach);
+		$mach->stop();
+
+		return $ret;
 	}
 
 	private function parse_to_next($separator, &$str) {

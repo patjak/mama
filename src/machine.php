@@ -24,6 +24,11 @@ class Machine {
 		// How long to wait for a resource to become available (in seconds)
 		$resource_wait_timeout = 20 * 60 * 60;
 
+	private static function sort_machines($a, $b)
+	{
+		return $a->name > $b->name;
+	}
+
 	public static function get_all()
 	{
 		$machs = array();
@@ -36,6 +41,8 @@ class Machine {
 
 			$machs[] = $mach;
 		}
+
+		uasort($machs, "Machine::sort_machines");
 
 		return $machs;
 	}

@@ -7,7 +7,6 @@ mama set $MACH kernel Default
 mkdir -p $MAMA_PATH ; mount -t nfs $MAMA_HOST:$MAMA_PATH $MAMA_PATH ; rm /usr/sbin/mama ; ln -s $MAMA_PATH/src/mama /usr/sbin/mama ; echo
 # Hack to fix DNS issue
 echo "nameserver 8.8.8.8" > /etc/resolv.conf
-zypper --no-gpg-checks --non-interactive in php python3-kiwi php8-curl netcat-openbsd
+zypper --no-gpg-checks --non-interactive in php python3-kiwi php8-curl netcat-openbsd python3-xmltodict
 
 mama run-os-build-script $ARCH $OS
-

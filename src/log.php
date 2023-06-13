@@ -13,6 +13,7 @@ class Log {
 	static $stdout = FALSE;
 	static $stderr = FALSE;
 	static $logfile = FALSE;
+	static $pause = FALSE;
 
 	public function init()
 	{
@@ -24,6 +25,18 @@ class Log {
 
 		if (self::$stdout === FALSE || self::$stderr === FALSE)
 			echo "Failed to open stdout and stderr\n";
+	}
+
+	// Temporarily pause logging
+	public static function pause()
+	{
+		self::$pause = TRUE;
+	}
+
+	// Resume normal logging
+	public static function resume()
+	{
+		self::$pause = FALSE;
 	}
 
 	public static function set_level($level)
@@ -38,7 +51,7 @@ class Log {
 		else if ($level != LOG_LVL_LOG)
 			fwrite(STDOUT, $msg);
 
-		if (self::$logfile !== FALSE) {
+		if (self::$logfile !== FALSE && self::$pause !== TRUE) {
 			if ($timestamp)
 				$date = "[".date("Y-m-d H:i:s")."]";
 			else

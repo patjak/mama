@@ -170,6 +170,8 @@ class Machine {
 
 	public function print_info()
 	{
+		Log::pause();
+
 		$ip = $this->get_ip();
 		out("Name:\t\t".$this->name);
 		out("MAC:\t\t".$this->mac);
@@ -205,6 +207,8 @@ class Machine {
 			out(Util::pad_str($key, 16), TRUE);
 			out(": ".$val);
 		}
+
+		Log::resume();
 	}
 
 	public function set($attr, $val)

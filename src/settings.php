@@ -1,26 +1,25 @@
 <?php
 
 class Settings {
-	private static $is_locked = FALSE, $stream;
+	private static $lock = 0, $stream;
 	public static $settings;
 
 	// Aquire exclusive lock on the settings file
 	public static function lock()
 	{
-		if (self::$is_locked)
-			fatal("mama.xml is already locked");
+		if (self::$lock == 0) {
+			debug("Aquiring lock");
+			self::$stream = fopen(SETTINGS_FILE, "r");
 
-		debug("Aquiring lock");
-		self::$stream = fopen(SETTINGS_FILE, "r");
+			if (flock(self::$stream, LOCK_EX) === FALSE) {
+				error("Failed to acquire read lock on mama.xml");
+				fclose(self::$stream);
 
-		if (flock(self::$stream, LOCK_EX) === FALSE) {
-			error("Failed to acquire read lock on mama.xml");
-			fclose(self::$stream);
-
-			return FALSE;
+				return FALSE;
+			}
 		}
 
-		self::$is_locked = TRUE;
+		self::$lock++;
 
 		return TRUE;
 	}
@@ -28,13 +27,20 @@ class Settings {
 	// Release exclusive lock on the settings file
 	public static function unlock()
 	{
-		if (!self::$is_locked)
+		if (self::$lock == 0)
 			fatal("mama.xml is not locked");
 
-		debug("Releasing lock");
-		fclose(self::$stream);
+		self::$lock--;
 
-		self::$is_locked = FALSE;
+		if (self::$lock == 0) {
+			debug("Releasing lock");
+			fclose(self::$stream);
+		}
+	}
+
+	public static function is_lock_held()
+	{
+		return (self::$lock != 0);
 	}
 
 	// Implement our own file_get_contents() because we need locking
@@ -204,9 +210,11 @@ class Settings {
 
 	public static function update_machine($mach)
 	{
+		self::lock();
 		$i = Settings::get_machine_index($mach);
 		Settings::delete_machine($mach);
 		Settings::add_machine($mach);
+		self::unlock();
 	}
 
 	public static function add_machine($mach)

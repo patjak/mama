@@ -349,7 +349,14 @@ class Machine {
 					out($res, TRUE, FALSE);
 				out("", FALSE, FALSE);
 			}
+
+			Settings::unlock();
+			if (Settings::is_lock_held())
+				fatal("Waiting for resources with lock held!");
+
 			sleep(10);
+			Settings::lock();
+
 			$timeout -= 10;
 			if ($timeout <= 0) {
 				$this->error("Timed out waiting for resources");
@@ -389,11 +396,15 @@ class Machine {
 		if ($this->is_only_vm())
 			return $this->start_vm();
 
-		if ($this->wait_for_resources() === FALSE)
+		Settings::lock();
+		if ($this->wait_for_resources() === FALSE) {
+			Settings::unlock();
 			return FALSE;
+		}
 
 		$this->is_started = 1;
 		Settings::update_machine($this);
+		Settings::unlock();
 
 		if ($status == "offline") {
 			if ($this->pwr_dev != "") {

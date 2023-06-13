@@ -85,12 +85,12 @@ function out($msg, $no_eol = FALSE, $timestamp = TRUE)
 	Log::print_msg($msg, LOG_LVL_DEFAULT, $timestamp);
 }
 
-function error($msg, $no_eol = FALSE)
+function error($msg, $no_eol = FALSE, $timestamp = TRUE)
 {
 	if ($no_eol == FALSE)
 		$msg .= "\n";
 
-	out($msg, LOG_LVL_ERROR);
+	Log::print_msg($msg, LOG_LVL_ERROR, $timestamp);
 }
 
 function fatal($msg, $errno = 1)
@@ -105,7 +105,7 @@ function debug($msg, $no_eol = FALSE)
 		$msg .= "\n";
 
 	if (DEBUG)
-		out($msg, LOG_LVL_DEBUG);
+		Log::print_msg($msg, LOG_LVL_DEBUG, $timestamp);
 }
 
 ?>

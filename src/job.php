@@ -143,7 +143,7 @@ class Job {
 				continue;
 
 			if ($context == "MAMA") {
-				out("EXECUTING: ".$line);
+				out("(mama) ".$line);
 				$res = NULL;
 				$log_str = Log::$logfile !== FALSE ? " &>> ".Log::$logfile : "";
 				passthru($line." ".$log_str, $res);

@@ -224,7 +224,7 @@ class Machine {
 			$arch = explode("/", $val)[0];
 			$os = explode("/", $val)[1];
 			if (Os::is_runnable($arch, $os, $this)) {
-				out("Setting OS ".$val." to machine ".$this->name);
+				$this->out("Setting OS ".$val);
 				$this->os = $val;
 				Settings::update_machine($this);
 			} else {
@@ -241,7 +241,7 @@ class Machine {
 				$this->kernel = $val;
 				Settings::update_machine($this);
 			} else {
-				out("Kernel ".$val." doesn't exist. Aborting.");
+				$this->error("Kernel ".$val." doesn't exist. Aborting.");
 			}
 			break;
 		case "resources":
@@ -268,13 +268,13 @@ class Machine {
 		// Find power obj
 		$dev = CtlDev::get_by_name($this->pwr_dev);
 		if ($dev === false) {
-			out("Couldn't find power device");
+			$this->error("Couldn't find power device");
 			return FALSE;
 		}
 
 		$data = $dev->get_sensors($this->pwr_slot);
 		if ($data === NULL) {
-			out("No sensors found");
+			$this->error("No sensors found");
 			return FALSE;
 		}
 
@@ -291,7 +291,7 @@ class Machine {
 	public function wait_for_status($status, $seconds, $dont_print = FALSE)
 	{
 		if (!$dont_print)
-			out("Waiting for status: ".$status);
+			$this->out("Waiting for status: ".$status."... ", TRUE);
 
 		$time = time();
 
@@ -300,14 +300,14 @@ class Machine {
 			sleep(1);
 
 			if ($time_passed >= $seconds) {
-				out("Timed out after ".$seconds."s waiting for status ".$status);
+				out("timed out after ".$seconds."s", FALSE, FALSE);
 				return FALSE;
 			}
 		}
 
 		$time_passed = time() - $time;
 		if (!$dont_print)
-			out("Status reached after ".$time_passed." seconds");
+			out("reached after ".$time_passed." s", FALSE, FALSE);
 
 		return TRUE;
 	}
@@ -340,7 +340,7 @@ class Machine {
 
 		if ($sleep) {
 			if ($timeout == self::$resource_wait_timeout) {
-				out("Waiting for resources: ", TRUE);
+				$this->out("Waiting for resources: ", TRUE);
 				foreach ($res_wait as $res)
 					out($res, TRUE, FALSE);
 				out("", FALSE, FALSE);
@@ -348,7 +348,7 @@ class Machine {
 			sleep(10);
 			$timeout -= 10;
 			if ($timeout <= 0) {
-				error("Timed out waiting for resources");
+				$this->error("Timed out waiting for resources");
 				return FALSE;
 			}
 			return $this->wait_for_resources($timeout);
@@ -361,19 +361,19 @@ class Machine {
 	{
 		$status = $this->get_status();
 		if ($status == "online") {
-			error("Machine is already started");
+			$this->error("Machine is already started");
 			return FALSE;
 		}
 
 		if ($this->os == "") {
-			error("No OS has been configured!");
+			$this->error("No OS has been configured!");
 			return FALSE;
 		}
 
 		$arch = explode("/", $this->os)[0];
 		$os = explode("/", $this->os)[1];
 		if (!OS::is_runnable($arch, $os, $this)) {
-			error("Os is not runnable: ".$this->os);
+			$this->error("OS is not runnable: ".$this->os);
 			return FALSE;
 		}
 
@@ -395,12 +395,12 @@ class Machine {
 			if ($this->pwr_dev != "") {
 				if ($this->get("output (bool)") != 0) {
 					$this->set("power", 0);
-					out("Power was already on. Waiting: ".self::$power_cycle_delay." seconds");
+					$this->out("Power was already on. Waiting: ".self::$power_cycle_delay." seconds");
 					sleep(self::$power_cycle_delay);
 				}
 				$this->set("power", 1);
 			} else if ($this->rly_dev == "") {
-				out("No control device available to turn on the machine");
+				$this->out("No control device available to turn on the machine");
 				return FALSE;
 			}
 
@@ -436,19 +436,19 @@ class Machine {
 		exec("ps ax | grep qemu | grep -v SCREEN | grep ".$this->mac, $out, $res);
 		$pid = explode(" ", $out[0])[0];
 
-		out("Killing VM ".$this->name." with pid ".$pid);
+		$this->out("Killing VM with pid ".$pid);
 		exec("kill ".$pid);
 	}
 
 	public function start_vm()
 	{
 		if (!Util::is_root() === true)
-			out("You must be root to start a VM");
+			$this->out("You must be root to start a VM");
 
 		unset($out);
 		exec("ps aux | grep qemu | grep ".$this->mac, $out, $res);
 		if (count($out) > 1) {
-			out("Failed to start VM. Already running.");
+			$this->out("Failed to start VM. Already running.");
 			return FALSE;
 		}
 
@@ -461,14 +461,14 @@ class Machine {
 		}
 
 		if ($tap_id > 10) {
-			out("No available tap interface found");
+			$this->out("No available tap interface found");
 			return FALSE;
 		}
 
 		$this->is_started = 1;
 		Settings::update_machine($this);
 
-		out("Starting virtual machine for ".$this->name." with OS ".$this->os." and tap".$tap_id);
+		$this->out("Starting virtual machine with OS ".$this->os." and tap".$tap_id);
 		$num_cores = (int)shell_exec("nproc");
 		$cores_str = "-smp ".$num_cores;
 		$sys_str = "-m ".(1024 * 8);
@@ -504,7 +504,6 @@ class Machine {
 		// echo "screen -d -m qemu-system-".$arch." ".$sys_str." ".$net_str." -nographic -serial file:/tmp/mama-virt-out-".$this->name."\n";
 		// passthru("qemu-system-".$arch." ".$sys_str." ".$net_str." -nographic -serial mon:stdio");
 
-
 		$ret = $this->wait_for_status("online", self::$start_timeout);
 		if (!$ret)
 			$this->kill_vm();
@@ -514,7 +513,7 @@ class Machine {
 
 	public function stop()
 	{
-		out("Stopping machine ".$this->name);
+		$this->out("Stopping machine");
 
 		$status = $this->get_status();
 
@@ -531,7 +530,7 @@ class Machine {
 			} else if ($this->pwr_dev != "") {
 				$this->set("power", 0);
 			} else {
-				out("No control device available to turn off the machine");
+				$this->out("No control device available to turn off the machine");
 				$this->ip = "";
 				$this->is_started = "";
 				Settings::update_machine($this);
@@ -565,7 +564,7 @@ class Machine {
 	{
 		// Sometimes we don't get the correct status immediately so wait a little bit for it
 		if ($this->wait_for_status("online", 30, TRUE)) {
-			out("ssh cmd: ".$cmd);
+			out("(".$this->name.") ssh: ".$cmd);
 			$log_str = Log::$logfile !== FALSE ? " &>> ".Log::$logfile : "";
 			passthru("timeout --foreground ".self::$ssh_cmd_timeout."m ssh -q -o \"UserKnownHostsFile=/dev/null\" ".
 				"-o \"ConnectTimeout=10\" ".
@@ -615,6 +614,21 @@ class Machine {
 	function get_kernel_path()
 	{
 		return MAMA_PATH."/machines/".$this->name."/".$this->os."/boot/";
+	}
+
+	function out($msg, $no_eol = FALSE, $timestamp = TRUE)
+	{
+		out("(".$this->name.") ".$msg, $no_eol, $timestamp);
+	}
+
+	function error($msg, $no_eol = FALSE, $timestamp = TRUE)
+	{
+		error("(".$this->name.") ".$msg, $no_eol, $timestamp);
+	}
+
+	function fatal($msg, $errno = 1)
+	{
+		fatal("(".$this->name.") ".$msg, $errno);
 	}
 }
 

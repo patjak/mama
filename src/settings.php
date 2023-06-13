@@ -238,6 +238,7 @@ class Settings {
 		$m->addChild("reservation", $mach->reservation);
 		$m->addChild("resources", $mach->resources);
 		$m->addChild("boot_params", $mach->boot_params);
+		$m->addChild("job", $mach->job);
 
 		Settings::save();
 		self::unlock();

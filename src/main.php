@@ -146,7 +146,10 @@ function cmd_list()
 		out(Util::pad_str($power, 8), TRUE);
 
 		// Is VM?
-		out(Util::pad_str($mach->is_vm() ? "Yes" : "", 4));
+		out(Util::pad_str($mach->is_vm() ? "Yes" : "", 4), TRUE);
+
+		// Currently running job
+		out(Util::pad_str($mach->job, 8));
 	}
 }
 

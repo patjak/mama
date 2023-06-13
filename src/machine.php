@@ -2,7 +2,7 @@
 
 class Machine {
 	public $name, $mac, $ip, $is_started, $arch, $os, $kernel, $pwr_dev, $pwr_slot,
-	       $rly_dev, $rly_slot, $reservation, $resources, $boot_params, $only_vm;
+	       $rly_dev, $rly_slot, $reservation, $resources, $boot_params, $only_vm, $job;
 
 	// Tunables for how to manage machines
 	public static
@@ -166,6 +166,7 @@ class Machine {
 		$this->resources = (string)$obj->resources;
 		$this->boot_params = (string)$obj->boot_params;
 		$this->only_vm = (string)$obj->only_vm;
+		$this->job = (string)$obj->job;
 	}
 
 	public function print_info()
@@ -187,6 +188,8 @@ class Machine {
 		out("Reserved by:\t".$this->reservation);
 		out("Resources:\t".$this->resources);
 		out("Boot params:\t".$this->boot_params);
+		if ($this->job != "")
+			out("Running job:\t".$this->job);
 		out("Power sensors:");
 
 		// Find power obj

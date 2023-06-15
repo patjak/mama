@@ -112,7 +112,7 @@ function fatal($msg, $errno = 1)
 	exit($errno);
 }
 
-function debug($msg, $no_eol = FALSE)
+function debug($msg, $no_eol = FALSE, $timestamp = FALSE)
 {
 	if ($no_eol == FALSE)
 		$msg .= "\n";

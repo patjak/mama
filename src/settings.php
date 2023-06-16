@@ -1,25 +1,26 @@
 <?php
 
 class Settings {
-	private static $lock = 0, $stream;
+	private static $lock = 0, $stream = FALSE;
 	public static $settings;
 
 	// Aquire exclusive lock on the settings file
 	public static function lock()
 	{
 		if (self::$lock == 0) {
-			debug("Aquiring lock");
-			self::$stream = fopen(SETTINGS_FILE, "r");
+			if (self::$stream !== FALSE)
+				fatal("Tried to aquire an already aquired lock");
 
-			if (flock(self::$stream, LOCK_EX) === FALSE) {
-				error("Failed to acquire read lock on mama.xml");
-				fclose(self::$stream);
+			self::$stream = fopen(SETTINGS_FILE, "r+");
+			if (self::$stream === FALSE)
+				fatal("Failed to open mama.xml");
 
-				return FALSE;
-			}
+			if (flock(self::$stream, LOCK_EX) === FALSE)
+				fatal("Failed to acquire read lock on mama.xml");
 		}
 
 		self::$lock++;
+		debug("Aquiring lock: ".self::$lock);
 
 		return TRUE;
 	}
@@ -31,10 +32,11 @@ class Settings {
 			fatal("mama.xml is not locked");
 
 		self::$lock--;
+		debug("Releasing lock: ".self::$lock);
 
 		if (self::$lock == 0) {
-			debug("Releasing lock");
 			fclose(self::$stream);
+			self::$stream = FALSE;
 		}
 	}
 
@@ -46,36 +48,25 @@ class Settings {
 	// Implement our own file_get_contents() because we need locking
 	public static function get_contents()
 	{
-		// Sometimes the file fails to read and returns empty
-		// Retry a couple of times
-		for ($i = 0; $i < 5; $i++) {
-			$stream = fopen(SETTINGS_FILE, "r");
-			if ($stream === FALSE) {
-				error("Failed to open mama.xml");
-			} else {
-				// We must clear the stat cache or the filesize gets wrong
-				clearstatcache(TRUE, SETTINGS_FILE);
+		self::lock();
 
-				$str = fread($stream, filesize(SETTINGS_FILE));
-				fclose($stream);
+		// We must clear the stat cache or the filesize gets wrong
+		clearstatcache(TRUE, SETTINGS_FILE);
 
-				if ($str === FALSE) {
-					error("Failed to read mama.xml");
-				} else {
-					if (strlen($str) != filesize(SETTINGS_FILE)) {
-						error("Size mismatch: ".strlen($str)." != ".filesize(SETTINGS_FILE));
-					} else {
-						// We finally have something that looks ok
-						break;
-					}
-				}
-			}
+		$filesize = filesize(SETTINGS_FILE);
+		if (rewind(self::$stream) !== TRUE)
+			fatal("Failed to rewind file");
 
-			sleep(5);
-			out("Retrying... ".$i);
-		}
+		$str = fread(self::$stream, $filesize);
+		self::unlock();
 
-		// Double check that we got the entire file
+		if ($str === FALSE)
+			fatal("Failed to read mama.xml");
+
+		if (strlen($str) != $filesize)
+			fatal("Size mismatch: ".strlen($str)." != ".filesize(SETTINGS_FILE));
+
+		// Check that we truly got the entire file
 		if (strpos($str, "</settings>") === FALSE) {
 			error("Invalid mama.xml");
 			var_dump($str);
@@ -88,33 +79,26 @@ class Settings {
 	public static function put_contents($str)
 	{
 		// Protect from accidentaly wiping the file
-		if ($str == "") {
-			error("FATAL: Trying to write an empty mama.xml");
-			return FALSE;
-		}
+		if ($str == "")
+			fatal("FATAL: Trying to write an empty mama.xml");
 
-		$stream = fopen(SETTINGS_FILE, "w");
-		if ($stream === FALSE) {
-			error("Failed to open mama.xml");
-			return FALSE;
-		}
+		self::lock();
+		if (ftruncate(self::$stream, 0) !== TRUE)
+			fatal("Failed to truncate file");
 
-		$len = fwrite($stream, $str);
-		if ($len === FALSE) {
-			error("Failed to write mama.xml");
-			fclose($stream);
-			return FALSE;
-		}
+		if (rewind(self::$stream) !== TRUE)
+			fatal("Failed to rewind file");
 
-		if ($len != strlen($str)) {
-			error("Not all content got written to mama.xml");
-			return FALSE;
-		}
+		$len = fwrite(self::$stream, $str);
+		self::unlock();
 
-		fclose($stream);
+		if ($len === FALSE)
+			fatal("Failed to write mama.xml");
+
+		if ($len != strlen($str))
+			fatal("Not all content got written to mama.xml");
 
 		return $str;
-
 	}
 
 	public static function load()
@@ -134,12 +118,9 @@ class Settings {
 		}
 
 		if (!file_exists(SETTINGS_FILE))
-			return FALSE;
+			fatal("No mama.xml file found");
 
 		$str = self::get_contents();
-
-		if (strlen($str) == 0 || $str === FALSE)
-			return FALSE;
 
 		self::$settings = simplexml_load_string($str);
 
@@ -162,10 +143,8 @@ class Settings {
 	{
 		$xml = Settings::make_xml_great_again(self::$settings->asXML());
 
-		if (self::put_contents($xml) === FALSE) {
-			error("Unable to save settings file: ".SETTINGS_FILE);
-			exit(1);
-		}
+		if (self::put_contents($xml) === FALSE)
+			fatal("Unable to save settings file: ".SETTINGS_FILE);
 	}
 
 	// Returns the index of the machine in the xml

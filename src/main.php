@@ -132,8 +132,11 @@ function cmd_list()
 		out(Util::pad_str($mach->get_status(), 10), TRUE);
 
 		// Power
-		$watt_str = $power > 0 ? "W" : "";
-		out(Util::pad_str(round($power, 0).$watt_str, 6), TRUE);
+		if (is_numeric($power)) {
+			$power = round($power, 0);
+			$power .= $power > 0 ? "W" : "";
+		}
+		out(Util::pad_str($power, 6), TRUE);
 
 		// Is VM?
 		out(Util::pad_str($mach->is_vm() ? "Yes" : "", 4), TRUE);

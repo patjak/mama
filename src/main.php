@@ -658,7 +658,7 @@ function cmd_start($arg)
 	if ($mach === false)
 		return;
 
-	out("Starting machine ".$mach->name." with OS ".$mach->os);
+	$mach->out("Starting machine with OS ".$mach->os);
 	$mach->start();
 }
 

@@ -100,6 +100,11 @@ class Machine {
 		return Util::is_valid_ip($this->ip);
 	}
 
+	public function get_power()
+	{
+		return $this->get("output (bool)");
+	}
+
 	public function get_ssh_status()
 	{
 		$ip = $this->get_ip();
@@ -428,7 +433,7 @@ class Machine {
 
 		if ($status == "offline") {
 			if ($this->pwr_dev != "") {
-				if ($this->get("output (bool)") != 0) {
+				if ($this->get_power() != 0) {
 					$this->set("power", 0);
 					$this->out("Power was already on. Waiting: ".self::$power_cycle_delay." seconds");
 					sleep(self::$power_cycle_delay);
@@ -548,6 +553,9 @@ class Machine {
 
 	public function stop()
 	{
+		if (!$this->is_vm() && $this->get_power() == 0)
+			return TRUE;
+
 		$this->out("Stopping machine");
 
 		$status = $this->get_status();

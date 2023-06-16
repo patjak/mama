@@ -88,23 +88,6 @@ function parse_args($argv)
 	}
 }
 
-function get_machine_list()
-{
-	$machines = array();
-
-	for ($i = 0; $i < count(Settings::$settings->machine); $i++) {
-		$m1 = Settings::$settings->machine[$i];
-		$m2 = new Machine();
-		$m2->name = $m1->name;
-		$m2->mac = $m1->mac;
-		$m2->os = $m1->os;
-
-		$machines[] = Settings::$settings->machine[$i];
-	}
-
-	return $machines;
-}
-
 function cmd_list()
 {
 	$pwr_devs = array();
@@ -166,7 +149,7 @@ function cmd_new()
 	while ($name == "") {
 		$name = Util::get_line("Name: ");
 
-		$machs = get_machine_list();
+		$machs = Machine::get_all();
 		foreach ($machs as $m) {
 			if ($m->name == $name) {
 				error("Name already exists");
@@ -594,7 +577,7 @@ function select_machine($arg)
 {
 	Log::set_file(FALSE);
 
-	$machs = get_machine_list();
+	$machs = Machine::get_all();
 
 	if ($arg !== false) {
 		foreach ($machs as $mach) {

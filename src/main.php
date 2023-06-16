@@ -110,8 +110,14 @@ function cmd_list()
 	$pwr_devs = array();
 
 	$i = 1;
-	out("No\tName\t\tIP\t\tState\tPower\tVM\tJob");
-	out("--------------------------------------------------------------------------------");
+	out(Util::pad_str("No", 4), TRUE);
+	out(Util::pad_str("Name", 16), TRUE);
+	out(Util::pad_str("IP", 16), TRUE);
+	out(Util::pad_str("State", 10), TRUE);
+	out(Util::pad_str("Pwr", 6), TRUE);
+	out(Util::pad_str("VM", 4), TRUE);
+	out(Util::pad_str("Job", 32));
+	out("------------------------------------------------------------------------");
 
 	$machs = Machine::get_all();
 
@@ -131,7 +137,7 @@ function cmd_list()
 		$ip = $mach->get_ip();
 
 		// Number
-		out(Util::pad_str($i++, 8), TRUE);
+		out(Util::pad_str($i++, 4), TRUE);
 
 		// Name
 		out(Util::pad_str($mach->name, 16), TRUE);
@@ -140,16 +146,17 @@ function cmd_list()
 		out(Util::pad_str($ip, 16), TRUE);
 
 		// State
-		out(Util::pad_str($mach->get_status(), 8), TRUE);
+		out(Util::pad_str($mach->get_status(), 10), TRUE);
 
 		// Power
-		out(Util::pad_str($power, 8), TRUE);
+		$watt_str = $power > 0 ? "W" : "";
+		out(Util::pad_str(round($power, 0).$watt_str, 6), TRUE);
 
 		// Is VM?
 		out(Util::pad_str($mach->is_vm() ? "Yes" : "", 4), TRUE);
 
 		// Currently running job
-		out(Util::pad_str($mach->job, 8));
+		out(Util::pad_str($mach->job, 32));
 	}
 }
 

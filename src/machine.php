@@ -169,6 +169,23 @@ class Machine {
 		$this->job = (string)$obj->job;
 	}
 
+	public function save()
+	{
+		Settings::update_machine($this);
+	}
+
+	public function clear()
+	{
+		Settings::lock();
+		$this->stop();
+
+		$this->ip = "";
+		$this->is_started = "";
+		$this->job = "";
+		$this->save();
+		Settings::unlock();
+	}
+
 	public function print_info()
 	{
 		Log::pause();
@@ -233,7 +250,7 @@ class Machine {
 			if (Os::is_runnable($arch, $os, $this)) {
 				$this->out("Setting OS ".$val);
 				$this->os = $val;
-				Settings::update_machine($this);
+				$this->save();
 			} else {
 				fatal("Invalid OS: ".$val);
 			}
@@ -246,7 +263,7 @@ class Machine {
 
 			if (in_array($val, array_keys($kernels)) || $val == "") {
 				$this->kernel = $val;
-				Settings::update_machine($this);
+				$this->save();
 			} else {
 				$this->error("Kernel ".$val." doesn't exist. Aborting.");
 			}
@@ -257,7 +274,7 @@ class Machine {
 				$val = Util::get_line("Enter new resources (space separated): ");
 
 			$this->resources = $val;
-			Settings::update_machine($this);
+			$this->save();
 			break;
 		case "params":
 			out("Current boot parameters: ".$this->boot_params);
@@ -265,7 +282,7 @@ class Machine {
 				$val = Util::get_line("Enter new boot parameters: ");
 
 			$this->boot_params = $val;
-			Settings::update_machine($this);
+			$this->save();
 			break;
 		}
 	}
@@ -406,7 +423,7 @@ class Machine {
 		}
 
 		$this->is_started = 1;
-		Settings::update_machine($this);
+		$this->save();
 		Settings::unlock();
 
 		if ($status == "offline") {
@@ -484,7 +501,7 @@ class Machine {
 		}
 
 		$this->is_started = 1;
-		Settings::update_machine($this);
+		$this->save();
 
 		$this->out("Starting virtual machine with OS ".$this->os." and tap".$tap_id);
 		$num_cores = (int)shell_exec("nproc");
@@ -551,7 +568,7 @@ class Machine {
 				$this->out("No control device available to turn off the machine");
 				$this->ip = "";
 				$this->is_started = "";
-				Settings::update_machine($this);
+				$this->save();
 
 				return FALSE;
 			}
@@ -573,7 +590,7 @@ class Machine {
 		// Clear the ip and is_started field in the xml
 		$this->ip = "";
 		$this->is_started = "";
-		Settings::update_machine($this);
+		$this->save();
 
 		return TRUE;
 	}

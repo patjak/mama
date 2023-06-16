@@ -708,6 +708,7 @@ function cmd_connect($arg)
 
 function cmd_reserve($arg)
 {
+	Settings::lock();
 	$mach = select_machine($arg);
 	if ($mach === false)
 		return;
@@ -717,14 +718,18 @@ function cmd_reserve($arg)
 
 	$user = trim(shell_exec("whoami"));
 	$mach->reservation = $user;
-	Settings::update_machine($mach);
+	$mach->save();
+	Settings::unlock();
 }
 
 function cmd_release($arg)
 {
+	Settings::lock();
 	$mach = select_machine($arg);
-	if ($mach === false)
+	if ($mach === false) {
+		Settings::unlock();
 		return;
+	}
 
 	if ($mach->reservation == "")
 		fatal("Machine is not reserved");
@@ -735,17 +740,22 @@ function cmd_release($arg)
 		      "Use the command release-forced to force release the machine.");
 	}
 	$mach->reservation = "";
-	Settings::update_machine($mach);
+	$mach->save();
+	Settings::unlock();
 }
 
 function cmd_release_forced($arg)
 {
+	Settings::unlock();
 	$mach = select_machine($arg);
-	if ($mach === false)
+	if ($mach === false) {
+		Settings::unlock();
 		return;
+	}
 
 	$mach->reservation = "";
-	Settings::update_machine($mach);
+	$mach->save();
+	Settings::unlock();
 }
 
 // Generate the ipxe commands needed to boot a machine
@@ -773,7 +783,7 @@ function cmd_ipxe($argv)
 	// Store the ip for this session
 	if (Util::is_valid_ip($client_ip)) {
 		$mach->ip = $client_ip;
-		Settings::update_machine($mach);
+		$mach->save();
 	}
 
 	$path = "http://".$server_ip."/mama/machines/$mach->name/".$mach->os;

@@ -8,8 +8,44 @@ class Job {
 		$this->name = $name;
 	}
 
+	// Returns an array with all the currently running jobs
+	private function get_running_jobs()
+	{
+		$machs = Machine::get_all();
+		$jobs = array();
+
+		foreach ($machs as $m) {
+			$job = $m->job;
+			if ($m->is_started && !in_array($job, $jobs))
+				$jobs[] = $job;
+		}
+
+		return $jobs;
+	}
+
 	public function execute_prepare_job($arch, $os, $worker)
 	{
+		Settings::lock();
+
+		$job = $this->name."-".$arch."-".$os;
+
+		// Wait for machines running this job to finish
+		do {
+			$running_jobs = $this->get_running_jobs();
+			if (in_array($job, $running_jobs)) {
+				Settings::unlock();
+				debug("Waiting for prepare job: ".$job);
+				sleep(60);
+				Settings::lock();
+			}
+		} while (in_array($job, $running_jobs));
+
+		$worker_mach = select_machine($worker);
+		$worker_mach->job = $this->name."-".$arch."-".$os;
+		$worker_mach->save();
+
+		Settings::unlock();
+
 		$job = file_get_contents(MAMA_PATH."/jobs/".$this->name."/prepare.job");
 		if ($job === FALSE)
 			return FALSE;
@@ -20,26 +56,46 @@ class Job {
 		$job = str_replace("\$MAMA_HOST", MAMA_HOST, $job);
 		$job = str_replace("\$WORKER", $worker, $job);
 
-		$worker_mach = select_machine($worker);
 
 		$ret = $this->execute($job, FALSE, $worker_mach);
 		$worker_mach->stop();
+
+		Settings::lock();
+
+		$worker_mach->job = "";
+		$worker_mach->save();
+
+		Settings::unlock();
 
 		return $ret;
 	}
 
 	public function execute_run_job($mach, $arch, $os)
 	{
+		Settings::lock();
 		$mach = select_machine($mach);
 
 		if ($mach === false) {
 			error("Failed to find machine");
+			Settings::unlock();
+			return FALSE;
+		}
+
+		if ($mach->job != "") {
+			$mach->error("Machine is busy with another job");
+			Settings::unlock();
 			return FALSE;
 		}
 
 		$job = file_get_contents(MAMA_PATH."/jobs/".$this->name."/run.job");
-		if ($job === FALSE)
+		if ($job === FALSE) {
+			Settings::unlock();
 			return FALSE;
+		}
+
+		$mach->job = $this->name."-".$arch."-".$os;
+		$mach->save();
+		Settings::unlock();
 
 		$job = str_replace("\$ARCH", $arch, $job);
 		$job = str_replace("\$OS", $os, $job);
@@ -50,6 +106,11 @@ class Job {
 
 		$ret = $this->execute($job, $mach);
 		$mach->stop();
+
+		Settings::lock();
+		$mach->job = "";
+		$mach->save();
+		Settings::unlock();
 
 		return $ret;
 	}

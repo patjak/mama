@@ -65,6 +65,9 @@ function parse_args($argv)
 	case "stop":
 		cmd_stop($arg);
 		break;
+	case "clear":
+		cmd_clear($arg);
+		break;
 	case "connect":
 		cmd_connect($arg);
 		break;
@@ -682,6 +685,16 @@ function cmd_stop($arg)
 	$mach->stop();
 }
 
+function cmd_clear($arg)
+{
+	$mach = select_machine($arg);
+
+	if ($mach === false)
+		return;
+
+	$mach->clear();
+}
+
 function cmd_connect($arg)
 {
 	$mach = select_machine($arg);
@@ -876,6 +889,7 @@ log [machine]					- show machine log
 start [machine]					- boot machine
 start-vm [machine]				- boot virtual instance of machine
 stop [machine]					- triggers power button
+clear [machine]					- stop machine and clear stale data (ip, job, etc)
 connect [machine]				- connect to machine with ssh
 set <machine> power <value>			- control wall power
 set <machine> relay <seconds>			- connect the relay for x seconds

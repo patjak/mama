@@ -62,6 +62,7 @@ class Job {
 
 		Settings::lock();
 
+		$worker_mach->load();
 		$worker_mach->job = "";
 		$worker_mach->save();
 
@@ -108,6 +109,7 @@ class Job {
 		$mach->stop();
 
 		Settings::lock();
+		$mach->load();
 		$mach->job = "";
 		$mach->save();
 		Settings::unlock();

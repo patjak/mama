@@ -768,8 +768,11 @@ function cmd_ipxe($argv)
 
 	// Store the ip for this session
 	if (Util::is_valid_ip($client_ip)) {
+		Settings::lock();
+		$mach->load();
 		$mach->ip = $client_ip;
 		$mach->save();
+		Settings::unlock();
 	}
 
 	$path = "http://".$server_ip."/mama/machines/$mach->name/".$mach->os;
@@ -808,11 +811,15 @@ function cmd_set($argv)
 		$arg_mach = $argv[2];
 	else
 		$arg_mach = false;
+
+	Settings::lock();
 	$mach = select_machine($arg_mach);
 
 	/* Machine not found */
-	if ($mach === false)
+	if ($mach === false) {
+		Settings::unlock();
 		return;
+	}
 
 	if (!isset($argv[3]))
 		$attr = Util::get_line("{power | relay | os}: ");
@@ -846,6 +853,7 @@ function cmd_set($argv)
 	}
 
 	$mach->set($attr, $val);
+	Settings::unlock();
 }
 
 function print_usage($argv)

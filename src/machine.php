@@ -179,16 +179,33 @@ class Machine {
 		Settings::update_machine($this);
 	}
 
+	public function load()
+	{
+		$machs = Machine::get_all();
+
+		foreach ($machs as $mach) {
+			if ($this->mac == $mach->mac) {
+				$this->fill_from_xmlobj($mach);
+				return;
+			}
+		}
+
+		fatal("Failed to load machine");
+	}
+
 	public function clear()
 	{
 		Settings::lock();
 		$this->stop();
 
+		$this->load();
 		$this->ip = "";
 		$this->is_started = "";
 		$this->job = "";
 		$this->save();
 		Settings::unlock();
+
+		$this->out("cleared machine state");
 	}
 
 	public function print_info()
@@ -253,9 +270,12 @@ class Machine {
 			$arch = explode("/", $val)[0];
 			$os = explode("/", $val)[1];
 			if (Os::is_runnable($arch, $os, $this)) {
+				Settings::lock();
+				$this->load();
 				$this->out("Setting OS ".$val);
 				$this->os = $val;
 				$this->save();
+				Settings::unlock();
 			} else {
 				fatal("Invalid OS: ".$val);
 			}
@@ -267,8 +287,11 @@ class Machine {
 				$val = "";
 
 			if (in_array($val, array_keys($kernels)) || $val == "") {
+				Settings::lock();
+				$this->load();
 				$this->kernel = $val;
 				$this->save();
+				Settings::unlock();
 			} else {
 				$this->error("Kernel ".$val." doesn't exist. Aborting.");
 			}
@@ -278,16 +301,22 @@ class Machine {
 			if ($val == "")
 				$val = Util::get_line("Enter new resources (space separated): ");
 
+			Settings::lock();
+			$this->load();
 			$this->resources = $val;
 			$this->save();
+			Settings::unlock();
 			break;
 		case "params":
 			out("Current boot parameters: ".$this->boot_params);
 			if ($val == "")
 				$val = Util::get_line("Enter new boot parameters: ");
 
+			Settings::lock();
+			$this->load();
 			$this->boot_params = $val;
 			$this->save();
+			Settings::unlock();
 			break;
 		}
 	}
@@ -427,6 +456,7 @@ class Machine {
 			return FALSE;
 		}
 
+		$this->load();
 		$this->is_started = 1;
 		$this->save();
 		Settings::unlock();
@@ -505,8 +535,11 @@ class Machine {
 			return FALSE;
 		}
 
+		Settings::lock();
+		$this->load();
 		$this->is_started = 1;
 		$this->save();
+		Settings::unlock();
 
 		$this->out("Starting virtual machine with OS ".$this->os." and tap".$tap_id);
 		$num_cores = (int)shell_exec("nproc");
@@ -574,9 +607,12 @@ class Machine {
 				$this->set("power", 0);
 			} else {
 				$this->out("No control device available to turn off the machine");
+				Settings::lock();
+				$this->load();
 				$this->ip = "";
 				$this->is_started = "";
 				$this->save();
+				Settings::unlock();
 
 				return FALSE;
 			}
@@ -596,9 +632,12 @@ class Machine {
 			$this->set("power", 0);
 
 		// Clear the ip and is_started field in the xml
+		Settings::lock();
+		$this->load();
 		$this->ip = "";
 		$this->is_started = "";
 		$this->save();
+		Settings::unlock();
 
 		return TRUE;
 	}

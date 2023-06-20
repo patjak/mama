@@ -174,7 +174,14 @@ class Job {
 							if (!$mach->start_vm())
 								return FALSE;
 						} else {
-							if (!$mach->start())
+							// Retry starting 3 times
+							for ($i = 0; $i < 3; $i++) {
+								if ($mach->start())
+									break;
+								$mach->out("Retrying to start machine: ".$i);
+								sleep(2);
+							}
+							if ($i == 3)
 								return FALSE;
 						}
 
@@ -188,7 +195,13 @@ class Job {
 							if (!$worker->start_vm())
 								return FALSE;
 						} else {
-							if (!$worker->start())
+							for ($i = 0; $i < 3; $i++) {
+								if ($worker->start())
+									break;
+								$worker->out("Retrying to start machine: ".$i);
+								sleep(2);
+							}
+							if ($i == 3)
 								return FALSE;
 						}
 					}

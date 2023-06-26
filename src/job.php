@@ -8,47 +8,72 @@ class Job {
 		$this->name = $name;
 	}
 
-	// Returns an array with all the currently running jobs
-	private function get_running_jobs()
+	// Is the job currently active?
+	private function is_active_job($job, $mach = FALSE)
 	{
 		$machs = Machine::get_all();
-		$jobs = array();
 
 		foreach ($machs as $m) {
-			$job = $m->job;
-			if ($m->is_started && !in_array($job, $jobs))
-				$jobs[] = $job;
+			if ($m->job == "")
+				continue;
+
+			$j1 = explode(" ", $m->job);
+			$j2 = explode(" ", $job);
+			$match = $j1[1] == $j2[1] && $j1[2] == $j2[2];
+
+			if ($mach === FALSE && $match)
+					return TRUE;
+			else if ($mach->name == $m->name && $match)
+					return TRUE;
 		}
 
-		return $jobs;
+		return FALSE;
+	}
+
+	private function wait_for_active_job($job, $unlock, $mach = FALSE)
+	{
+		if ($this->is_active_job($job, $mach))
+			out("Waiting for running job: ".$job);
+
+		while ($this->is_active_job($job, $mach)) {
+			if ($unlock)
+				Settings::unlock();
+			sleep(10);
+			if ($unlock)
+				Settings::lock();
+		}
 	}
 
 	public function execute_prepare_job($arch, $os, $worker)
 	{
+		$job = file_get_contents(MAMA_PATH."/jobs/".$this->name."/prepare.job");
+		if ($job === FALSE)
+			fatal("Prepare job not found");
+
 		Settings::lock();
 
-		$job = $this->name."-".$arch."-".$os;
+		$job_str = "prepare ".$this->name." ".$arch."/".$os;
 
-		// Wait for machines running this job to finish
-		do {
-			$running_jobs = $this->get_running_jobs();
-			if (in_array($job, $running_jobs)) {
-				Settings::unlock();
-				debug("Waiting for prepare job: ".$job);
-				sleep(60);
-				Settings::lock();
-			}
-		} while (in_array($job, $running_jobs));
+		// Wait for all machines running this job to finish
+		$this->wait_for_active_job($job_str, TRUE);
 
+		// Wait for the worker to finish any running jobs
 		$worker_mach = select_machine($worker);
-		$worker_mach->job = $this->name."-".$arch."-".$os;
+		if ($worker_mach->is_started && $worker_mach->job != "")
+			$worker_mach->out("Waiting for job to finish: ".$worker_mach->job);
+
+		while ($worker_mach->is_started && $worker_mach->job != "") {
+			Settings::unlock();
+			sleep(10);
+			Settings::lock();
+			$worker_mach->load();
+		}
+
+		$prev_job = $worker_mach->job; // Save old job name in case of nested jobs
+		$worker_mach->job = $job_str;
 		$worker_mach->save();
 
 		Settings::unlock();
-
-		$job = file_get_contents(MAMA_PATH."/jobs/".$this->name."/prepare.job");
-		if ($job === FALSE)
-			return FALSE;
 
 		$job = str_replace("\$ARCH", $arch, $job);
 		$job = str_replace("\$OS", $os, $job);
@@ -56,14 +81,13 @@ class Job {
 		$job = str_replace("\$MAMA_HOST", MAMA_HOST, $job);
 		$job = str_replace("\$WORKER", $worker, $job);
 
-
 		$ret = $this->execute($job, FALSE, $worker_mach);
 		$worker_mach->stop();
 
 		Settings::lock();
 
 		$worker_mach->load();
-		$worker_mach->job = "";
+		$worker_mach->job = $prev_job;
 		$worker_mach->save();
 
 		Settings::unlock();
@@ -73,28 +97,31 @@ class Job {
 
 	public function execute_run_job($mach, $arch, $os)
 	{
+		$job = file_get_contents(MAMA_PATH."/jobs/".$this->name."/run.job");
+		if ($job === FALSE)
+			return FALSE;
+
 		Settings::lock();
 		$mach = select_machine($mach);
 
-		if ($mach === false) {
+		if ($mach === FALSE) {
 			error("Failed to find machine");
 			Settings::unlock();
 			return FALSE;
 		}
 
-		if ($mach->job != "") {
-			$mach->error("Machine is busy with another job");
+		if ($mach->is_started && $mach->job != "")
+			$mach->out("Waiting for job to finish: ".$mach->job);
+
+		while ($mach->is_started && $mach->job != "") {
 			Settings::unlock();
-			return FALSE;
+			sleep(10);
+			Settings::lock();
+			$mach->load();
 		}
 
-		$job = file_get_contents(MAMA_PATH."/jobs/".$this->name."/run.job");
-		if ($job === FALSE) {
-			Settings::unlock();
-			return FALSE;
-		}
-
-		$mach->job = $this->name."-".$arch."-".$os;
+		$prev_job = $mach->job;
+		$mach->job = "run ".$this->name." ".$arch."/".$os;
 		$mach->save();
 		Settings::unlock();
 
@@ -106,11 +133,11 @@ class Job {
 		$job = str_replace("\$MAMA_HOST", MAMA_HOST, $job);
 
 		$ret = $this->execute($job, $mach);
-		$mach->stop();
 
 		Settings::lock();
+		$mach->stop();
 		$mach->load();
-		$mach->job = "";
+		$mach->job = $prev_job;
 		$mach->save();
 		Settings::unlock();
 

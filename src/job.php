@@ -30,18 +30,13 @@ class Job {
 		return FALSE;
 	}
 
-	private function wait_for_active_job($job, $unlock, $mach = FALSE)
+	private function wait_for_active_job($job, $mach = FALSE)
 	{
 		if ($this->is_active_job($job, $mach))
 			out("Waiting for running job: ".$job);
 
-		while ($this->is_active_job($job, $mach)) {
-			if ($unlock)
-				UNLOCK();
-			sleep(10);
-			if ($unlock)
-				LOCK();
-		}
+		while ($this->is_active_job($job, $mach))
+			SLEEP_ON_LOCK(10);
 	}
 
 	public function execute_prepare_job($arch, $os, $worker)
@@ -55,7 +50,7 @@ class Job {
 		$job_str = "prepare ".$this->name." ".$arch."/".$os;
 
 		// Wait for all machines running this job to finish
-		$this->wait_for_active_job($job_str, TRUE);
+		$this->wait_for_active_job($job_str);
 
 		// Wait for the worker to finish any running jobs
 		$worker_mach = select_machine($worker);
@@ -110,13 +105,11 @@ class Job {
 			return FALSE;
 		}
 
-		if ($mach->is_started && $mach->job != "")
+		if ($mach->job != "")
 			$mach->out("Waiting for job to finish: ".$mach->job);
 
-		while ($mach->is_started && $mach->job != "") {
-			UNLOCK();
-			sleep(10);
-			LOCK();
+		while ($mach->job != "") {
+			SLEEP_ON_LOCK(10);
 			$mach->load();
 		}
 

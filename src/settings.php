@@ -3,6 +3,17 @@
 define("LOCK", "Settings::lock");
 define("UNLOCK", "Settings::unlock");
 define("IS_LOCKED", "Settings::is_lock_held");
+function SLEEP_ON_LOCK($seconds)
+{
+	UNLOCK();
+
+	if (IS_LOCKED())
+		fatal("Sleeping while lock is held");
+
+	sleep($seconds);
+
+	LOCK();
+}
 
 class Settings {
 	private static $lock = 0, $stream = FALSE;

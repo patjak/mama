@@ -1,5 +1,9 @@
 <?php
 
+define("LOCK", "Settings::lock");
+define("UNLOCK", "Settings::unlock");
+define("IS_LOCKED", "Settings::is_lock_held");
+
 class Settings {
 	private static $lock = 0, $stream = FALSE;
 	public static $settings;

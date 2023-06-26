@@ -195,7 +195,7 @@ class Machine {
 
 	public function clear()
 	{
-		Settings::lock();
+		LOCK();
 		$this->stop();
 
 		$this->load();
@@ -203,7 +203,7 @@ class Machine {
 		$this->is_started = "";
 		$this->job = "";
 		$this->save();
-		Settings::unlock();
+		UNLOCK();
 
 		$this->out("cleared machine state");
 	}
@@ -270,12 +270,12 @@ class Machine {
 			$arch = explode("/", $val)[0];
 			$os = explode("/", $val)[1];
 			if (Os::is_runnable($arch, $os, $this)) {
-				Settings::lock();
+				LOCK();
 				$this->load();
 				$this->out("Setting OS ".$val);
 				$this->os = $val;
 				$this->save();
-				Settings::unlock();
+				UNLOCK();
 			} else {
 				fatal("Invalid OS: ".$val);
 			}
@@ -287,11 +287,11 @@ class Machine {
 				$val = "";
 
 			if (in_array($val, array_keys($kernels)) || $val == "") {
-				Settings::lock();
+				LOCK();
 				$this->load();
 				$this->kernel = $val;
 				$this->save();
-				Settings::unlock();
+				UNLOCK();
 			} else {
 				$this->error("Kernel ".$val." doesn't exist. Aborting.");
 			}
@@ -301,22 +301,22 @@ class Machine {
 			if ($val == "")
 				$val = Util::get_line("Enter new resources (space separated): ");
 
-			Settings::lock();
+			LOCK();
 			$this->load();
 			$this->resources = $val;
 			$this->save();
-			Settings::unlock();
+			UNLOCK();
 			break;
 		case "params":
 			out("Current boot parameters: ".$this->boot_params);
 			if ($val == "")
 				$val = Util::get_line("Enter new boot parameters: ");
 
-			Settings::lock();
+			LOCK();
 			$this->load();
 			$this->boot_params = $val;
 			$this->save();
-			Settings::unlock();
+			UNLOCK();
 			break;
 		}
 	}
@@ -404,12 +404,12 @@ class Machine {
 				out("", FALSE, FALSE);
 			}
 
-			Settings::unlock();
-			if (Settings::is_lock_held())
+			UNLOCK();
+			if (IS_LOCKED())
 				fatal("Waiting for resources with lock held!");
 
 			sleep(10);
-			Settings::lock();
+			LOCK();
 
 			$timeout -= 10;
 			if ($timeout <= 0) {
@@ -444,22 +444,24 @@ class Machine {
 
 		if ($status  == "unreachable") {
 			$this->stop();
+			$this->out("Waiting for power cycle delay: ".self::$power_cycle_delay);
+			sleep(self::$power_cycle_delay);
 			return $this->start();
 		}
 
 		if ($this->is_only_vm())
 			return $this->start_vm();
 
-		Settings::lock();
+		LOCK();
 		if ($this->wait_for_resources() === FALSE) {
-			Settings::unlock();
+			UNLOCK();
 			return FALSE;
 		}
 
 		$this->load();
 		$this->is_started = 1;
 		$this->save();
-		Settings::unlock();
+		UNLOCK();
 
 		if ($status == "offline") {
 			if ($this->pwr_dev != "") {
@@ -535,11 +537,11 @@ class Machine {
 			return FALSE;
 		}
 
-		Settings::lock();
+		LOCK();
 		$this->load();
 		$this->is_started = 1;
 		$this->save();
-		Settings::unlock();
+		UNLOCK();
 
 		$this->out("Starting virtual machine with OS ".$this->os." and tap".$tap_id);
 		$num_cores = (int)shell_exec("nproc");
@@ -607,12 +609,12 @@ class Machine {
 				$this->set("power", 0);
 			} else {
 				$this->out("No control device available to turn off the machine");
-				Settings::lock();
+				LOCK();
 				$this->load();
 				$this->ip = "";
 				$this->is_started = "";
 				$this->save();
-				Settings::unlock();
+				UNLOCK();
 
 				return FALSE;
 			}
@@ -632,12 +634,12 @@ class Machine {
 			$this->set("power", 0);
 
 		// Clear the ip and is_started field in the xml
-		Settings::lock();
+		LOCK();
 		$this->load();
 		$this->ip = "";
 		$this->is_started = "";
 		$this->save();
-		Settings::unlock();
+		UNLOCK();
 
 		return TRUE;
 	}

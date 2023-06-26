@@ -707,7 +707,7 @@ function cmd_connect($arg)
 
 function cmd_reserve($arg)
 {
-	Settings::lock();
+	LOCK();
 	$mach = select_machine($arg);
 	if ($mach === false)
 		return;
@@ -718,15 +718,15 @@ function cmd_reserve($arg)
 	$user = trim(shell_exec("whoami"));
 	$mach->reservation = $user;
 	$mach->save();
-	Settings::unlock();
+	UNLOCK();
 }
 
 function cmd_release($arg)
 {
-	Settings::lock();
+	LOCK();
 	$mach = select_machine($arg);
 	if ($mach === false) {
-		Settings::unlock();
+		UNLOCK();
 		return;
 	}
 
@@ -740,21 +740,21 @@ function cmd_release($arg)
 	}
 	$mach->reservation = "";
 	$mach->save();
-	Settings::unlock();
+	UNLOCK();
 }
 
 function cmd_release_forced($arg)
 {
-	Settings::unlock();
+	UNLOCK();
 	$mach = select_machine($arg);
 	if ($mach === false) {
-		Settings::unlock();
+		UNLOCK();
 		return;
 	}
 
 	$mach->reservation = "";
 	$mach->save();
-	Settings::unlock();
+	UNLOCK();
 }
 
 // Generate the ipxe commands needed to boot a machine
@@ -781,11 +781,11 @@ function cmd_ipxe($argv)
 
 	// Store the ip for this session
 	if (Util::is_valid_ip($client_ip)) {
-		Settings::lock();
+		LOCK();
 		$mach->load();
 		$mach->ip = $client_ip;
 		$mach->save();
-		Settings::unlock();
+		UNLOCK();
 	}
 
 	$path = "http://".$server_ip."/mama/machines/$mach->name/".$mach->os;
@@ -825,12 +825,12 @@ function cmd_set($argv)
 	else
 		$arg_mach = false;
 
-	Settings::lock();
+	LOCK();
 	$mach = select_machine($arg_mach);
 
 	/* Machine not found */
 	if ($mach === false) {
-		Settings::unlock();
+		UNLOCK();
 		return;
 	}
 
@@ -866,7 +866,7 @@ function cmd_set($argv)
 	}
 
 	$mach->set($attr, $val);
-	Settings::unlock();
+	UNLOCK();
 }
 
 function print_usage($argv)

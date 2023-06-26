@@ -37,10 +37,10 @@ class Job {
 
 		while ($this->is_active_job($job, $mach)) {
 			if ($unlock)
-				Settings::unlock();
+				UNLOCK();
 			sleep(10);
 			if ($unlock)
-				Settings::lock();
+				LOCK();
 		}
 	}
 
@@ -50,7 +50,7 @@ class Job {
 		if ($job === FALSE)
 			fatal("Prepare job not found");
 
-		Settings::lock();
+		LOCK();
 
 		$job_str = "prepare ".$this->name." ".$arch."/".$os;
 
@@ -63,9 +63,9 @@ class Job {
 			$worker_mach->out("Waiting for job to finish: ".$worker_mach->job);
 
 		while ($worker_mach->is_started && $worker_mach->job != "") {
-			Settings::unlock();
+			UNLOCK();
 			sleep(10);
-			Settings::lock();
+			LOCK();
 			$worker_mach->load();
 		}
 
@@ -73,7 +73,7 @@ class Job {
 		$worker_mach->job = $job_str;
 		$worker_mach->save();
 
-		Settings::unlock();
+		UNLOCK();
 
 		$job = str_replace("\$ARCH", $arch, $job);
 		$job = str_replace("\$OS", $os, $job);
@@ -84,13 +84,13 @@ class Job {
 		$ret = $this->execute($job, FALSE, $worker_mach);
 		$worker_mach->stop();
 
-		Settings::lock();
+		LOCK();
 
 		$worker_mach->load();
 		$worker_mach->job = $prev_job;
 		$worker_mach->save();
 
-		Settings::unlock();
+		UNLOCK();
 
 		return $ret;
 	}
@@ -101,12 +101,12 @@ class Job {
 		if ($job === FALSE)
 			return FALSE;
 
-		Settings::lock();
+		LOCK();
 		$mach = select_machine($mach);
 
 		if ($mach === FALSE) {
 			error("Failed to find machine");
-			Settings::unlock();
+			UNLOCK();
 			return FALSE;
 		}
 
@@ -114,16 +114,16 @@ class Job {
 			$mach->out("Waiting for job to finish: ".$mach->job);
 
 		while ($mach->is_started && $mach->job != "") {
-			Settings::unlock();
+			UNLOCK();
 			sleep(10);
-			Settings::lock();
+			LOCK();
 			$mach->load();
 		}
 
 		$prev_job = $mach->job;
 		$mach->job = "run ".$this->name." ".$arch."/".$os;
 		$mach->save();
-		Settings::unlock();
+		UNLOCK();
 
 		$job = str_replace("\$ARCH", $arch, $job);
 		$job = str_replace("\$OS", $os, $job);
@@ -134,12 +134,12 @@ class Job {
 
 		$ret = $this->execute($job, $mach);
 
-		Settings::lock();
+		LOCK();
 		$mach->stop();
 		$mach->load();
 		$mach->job = $prev_job;
 		$mach->save();
-		Settings::unlock();
+		UNLOCK();
 
 		return $ret;
 	}

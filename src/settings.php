@@ -1,8 +1,8 @@
 <?php
 
-define("LOCK", "Settings::lock");
-define("UNLOCK", "Settings::unlock");
-define("IS_LOCKED", "Settings::is_lock_held");
+function LOCK() { Settings::lock(); }
+function UNLOCK() { Settings::unlock(); }
+function IS_LOCKED() { return Settings::is_lock_held(); }
 function SLEEP_ON_LOCK($seconds)
 {
 	UNLOCK();

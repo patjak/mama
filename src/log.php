@@ -46,6 +46,8 @@ class Log {
 
 	public static function print_msg($msg, $level, $timestamp = TRUE)
 	{
+		date_default_timezone_set('Europe/Stockholm');
+
 		if ($level == LOG_LVL_ERROR)
 			fwrite(STDERR, $msg);
 		else if ($level != LOG_LVL_LOG)

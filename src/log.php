@@ -110,6 +110,8 @@ function error($msg, $no_eol = FALSE, $timestamp = TRUE)
 
 function fatal($msg, $errno = 1)
 {
+	if (DEBUG)
+		debug_print_backtrace();
 	Log::print_msg("FATAL ERROR: ".$msg."\n", LOG_LVL_ERROR);
 	exit($errno);
 }

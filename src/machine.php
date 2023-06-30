@@ -644,6 +644,20 @@ class Machine {
 		return TRUE;
 	}
 
+	public function wait()
+	{
+		LOCK();
+		$this->load();
+		if ($this->is_started || $this->job != "")
+			$this->out("Waiting for machine to become idle");
+
+		while ($this->is_started || $this->job != "") {
+			SLEEP_ON_LOCK(10);
+			$this->load();
+		}
+		UNLOCK();
+	}
+
 	public function ssh_cmd($cmd)
 	{
 		// Sometimes we don't get the correct status immediately so wait a little bit for it

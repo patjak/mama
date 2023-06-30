@@ -83,6 +83,9 @@ function parse_args($argv)
 	case "release-forced":
 		cmd_release_forced($arg);
 		break;
+	case "wait":
+		cmd_wait($arg);
+		break;
 	case "ipxe":
 		cmd_ipxe($argv);
 		break;
@@ -757,6 +760,15 @@ function cmd_release_forced($arg)
 	UNLOCK();
 }
 
+function cmd_wait($arg)
+{
+	$mach = select_machine($arg);
+	if ($mach === FALSE)
+		return;
+
+	$mach->wait();
+}
+
 // Generate the ipxe commands needed to boot a machine
 function cmd_ipxe($argv)
 {
@@ -900,6 +912,7 @@ set <machine> params <boot parameters>		- Set additional kernel command line par
 reserve <machine>				- Reserve the machine for the current user
 release <machine>				- Release any reservation you have on the machine
 release-forced <machine>			- Release the machine even if you didn't reserve it
+wait <machine>					- Wait for a machine to become available for use
 
 <?php
 }

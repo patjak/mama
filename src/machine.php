@@ -349,7 +349,7 @@ class Machine {
 	public function wait_for_status($status, $seconds, $dont_print = FALSE)
 	{
 		if (!$dont_print)
-			$this->out("Waiting for status: ".$status."... ", TRUE);
+			$this->out("Waiting for status: ".$status."... ");
 
 		$time = time();
 
@@ -365,7 +365,7 @@ class Machine {
 
 		$time_passed = time() - $time;
 		if (!$dont_print)
-			out("reached after ".$time_passed." s", FALSE, FALSE);
+			$this->out("Status reached after ".$time_passed." s");
 
 		return TRUE;
 	}

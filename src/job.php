@@ -32,6 +32,9 @@ class Job {
 
 	private function wait_for_active_job($job, $mach = FALSE)
 	{
+		if (!IS_LOCKED())
+			fatal("Lock must be held in wait_for_active_job()");
+
 		if ($this->is_active_job($job, $mach))
 			out("Waiting for running job: ".$job);
 
@@ -105,10 +108,10 @@ class Job {
 			return FALSE;
 		}
 
-		if ($mach->job != "")
+		if ($mach->is_started && $mach->job != "")
 			$mach->out("Waiting for job to finish: ".$mach->job);
 
-		while ($mach->job != "") {
+		while ($mach->is_started && $mach->job != "") {
 			SLEEP_ON_LOCK(10);
 			$mach->load();
 		}

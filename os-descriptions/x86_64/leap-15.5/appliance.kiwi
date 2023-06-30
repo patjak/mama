@@ -29,6 +29,9 @@
     <repository type="rpm-md" alias="Leap_15_5" imageinclude="true">
         <source path="obs://openSUSE:Leap:15.5/standard"/>
     </repository>
+    <repository type="rpm-md" alias="Leap_15_5-update" imageinclude="true">
+        <source path="obs://openSUSE:Leap:15.5:Update/standard"/>
+    </repository>
     <packages type="image">
         <package name="checkmedia"/>
         <package name="cryptsetup"/>

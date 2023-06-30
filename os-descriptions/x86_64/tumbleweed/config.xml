@@ -57,6 +57,7 @@
         <package name="timezone"/>
         <package name="xz" />
 
+        <package name="NetworkManager"/>
         <package name="curl"/>
         <package name="nfs-client"/>
 	<package name="chrony"/>

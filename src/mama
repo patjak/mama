@@ -16,7 +16,7 @@ require_once(MAMA_PATH."/src/ctldev.php");
 new CtlDev("- None -", 0, "");
 
 define("SETTINGS_FILE", MAMA_PATH."/mama.xml");
-define("DEBUG", FALSE);
+require_once(MAMA_PATH."/src/options.php");
 require_once(MAMA_PATH."/src/machine.php");
 require_once(MAMA_PATH."/src/settings.php");
 require_once(MAMA_PATH."/src/util.php");

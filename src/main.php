@@ -1,13 +1,23 @@
 <?php
 
+$opts = array("debug");
+
+$cmds = Options::parse($argv, $opts);
+
+if (isset(Options::$options["debug"]))
+	define("DEBUG", TRUE);
+else
+	define("DEBUG", FALSE);
+
 if ($argc > 1) {
 	if (Settings::load() === false)
 		fatal("Failed to open settings file: ".SETTINGS_FILE."\n");
 
-	parse_args($argv);
+	parse_args($cmds);
 
 	exit(0);
 }
+
 
 print_usage($argv);
 exit(0);

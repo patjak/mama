@@ -42,6 +42,29 @@ class Job {
 			SLEEP_ON_LOCK(10);
 	}
 
+	private function preprocess($job, $mach = FALSE)
+	{
+		$job = str_replace("\$ARCH", $arch, $job);
+		$job = str_replace("\$OS", $os, $job);
+		$job = str_replace("\$JOB", $this->name, $job);
+		$job = str_replace("\$MAMA_HOST", MAMA_HOST, $job);
+		$job = str_replace("\$WORKER", $worker, $job);
+		$job = str_replace("\$MAMA_PATH", MAMA_PATH, $job);
+		$job = str_replace("\$MAMA_HOST", MAMA_HOST, $job);
+
+		if ($mach !== FALSE)
+			$job = str_replace("\$MACH", $mach->name, $job);
+
+		$args = isset(Options::$options["args"]) ? explode(" ", Options::$options["args"]) : array();
+		for ($i = 1; $i < count($args); $i++)
+			$job = str_replace("\$ARG".$i, $args[$i - 1], $job);
+
+		$args_str = isset(Options::$options["args"]) ? Options::$options["args"] : "";
+		$job = str_replace("\$ARGS", $args_str, $job);
+
+		return $job;
+	}
+
 	public function execute_prepare_job($arch, $os, $worker)
 	{
 		$job = file_get_contents(MAMA_PATH."/jobs/".$this->name."/prepare.job");
@@ -73,11 +96,7 @@ class Job {
 
 		UNLOCK();
 
-		$job = str_replace("\$ARCH", $arch, $job);
-		$job = str_replace("\$OS", $os, $job);
-		$job = str_replace("\$JOB", $this->name, $job);
-		$job = str_replace("\$MAMA_HOST", MAMA_HOST, $job);
-		$job = str_replace("\$WORKER", $worker, $job);
+		$job = $this->preprocess($job);
 
 		$ret = $this->execute($job, FALSE, $worker_mach);
 		$worker_mach->stop();
@@ -121,12 +140,7 @@ class Job {
 		$mach->save();
 		UNLOCK();
 
-		$job = str_replace("\$ARCH", $arch, $job);
-		$job = str_replace("\$OS", $os, $job);
-		$job = str_replace("\$JOB", $this->name, $job);
-		$job = str_replace("\$MACH", $mach->name, $job);
-		$job = str_replace("\$MAMA_PATH", MAMA_PATH, $job);
-		$job = str_replace("\$MAMA_HOST", MAMA_HOST, $job);
+		$this->preprocess($job, $mach);
 
 		$ret = $this->execute($job, $mach);
 

@@ -1,6 +1,8 @@
 <?php
 
-$opts = array("debug");
+$opts = array(	"args:",
+		"debug",
+		"packages:");
 
 $cmds = Options::parse($argv, $opts);
 
@@ -342,6 +344,9 @@ function cmd_build_os($args)
 		return;
 	}
 
+	// Any additional packages will be passed to the build jobs as args
+	$packages = isset(Options::$options["packages"]) ? Options::$options["packages"] : "";
+
 	$arch = $args[2];
 	$os = $args[3];
 	if (isset($args[4]))
@@ -367,7 +372,7 @@ function cmd_build_os($args)
 	if ($mama_arch == $arch && $builder_mach->is_only_vm())
 		cmd_run_os_build_script($args);
 	else
-		passthru($need_sudo." mama job os-builder run ".$builder." ".$arch." ".$os);
+		passthru($need_sudo." mama job os-builder run ".$builder." ".$arch." ".$os." --args=\"".$packages."\"");
 }
 
 // This command builds a kiwi appliance from an existing os-description
@@ -376,6 +381,12 @@ function cmd_build_os($args)
 // job inside a VM or on a worker for the architecture we need.
 function cmd_run_os_build_script($args)
 {
+	$packages = isset(Options::$options["packages"]) ? explode(" ", Options::$options["packages"]) : array();
+
+	$packages_str = "";
+	foreach ($packages as $package)
+		$packages_str .= " --add-package=".$package;
+
 	if (!Util::is_root())
 		out("You must be root to run this command");
 
@@ -404,7 +415,7 @@ function cmd_run_os_build_script($args)
 	passthru($need_sudo." rm -Rf /tmp/mama-kiwi");
 
 	unset($code);
-	passthru($need_sudo." kiwi-ng --type=kis --debug system build --description ".$desc." --target-dir /tmp/mama-kiwi", $code);
+	passthru($need_sudo." kiwi-ng --type=kis --debug system build --description ".$desc." --target-dir /tmp/mama-kiwi ".$packages_str, $code);
 	if ($code != 0)
 		fatal("Failed to build os with kiwi");
 
@@ -900,8 +911,12 @@ list-kernel [machine]				- list available kernels
 list-jobs					- list available jobs
 log [machine]					- print log file
 job <job> prepare <arch> <os> [worker]		- Execute prepare part of job for arch and os
+  [--args=] - Additional arguments to pass along
+
 job <job> run <machine>	<arch> <os>		- Execute job on specified machine
 build-os <arch> <os> [worker]			- build a deployable os locally or on specified machine
+  [--packages=...] - Additional packages to install
+
 install-os <machine> <arch> <os> [name]		- install os to a machine
 copy-os <src-mach> <arch> <os> <dst-mach>	- copy an os from one machine to another
 new						- add a new machine

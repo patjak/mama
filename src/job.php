@@ -42,15 +42,17 @@ class Job {
 			SLEEP_ON_LOCK(10);
 	}
 
-	private function preprocess($job, $mach = FALSE)
+	private function preprocess($job, $arch, $os, $worker, $mach)
 	{
 		$job = str_replace("\$ARCH", $arch, $job);
 		$job = str_replace("\$OS", $os, $job);
 		$job = str_replace("\$JOB", $this->name, $job);
 		$job = str_replace("\$MAMA_HOST", MAMA_HOST, $job);
-		$job = str_replace("\$WORKER", $worker, $job);
 		$job = str_replace("\$MAMA_PATH", MAMA_PATH, $job);
 		$job = str_replace("\$MAMA_HOST", MAMA_HOST, $job);
+
+		if ($worker !== FALSE)
+			$job = str_replace("\$WORKER", $worker, $job);
 
 		if ($mach !== FALSE)
 			$job = str_replace("\$MACH", $mach->name, $job);
@@ -96,7 +98,7 @@ class Job {
 
 		UNLOCK();
 
-		$job = $this->preprocess($job);
+		$job = $this->preprocess($job, $arch, $os, $worker, FALSE);
 
 		$ret = $this->execute($job, FALSE, $worker_mach);
 		$worker_mach->stop();
@@ -140,7 +142,7 @@ class Job {
 		$mach->save();
 		UNLOCK();
 
-		$this->preprocess($job, $mach);
+		$job = $this->preprocess($job, $arch, $os, FALSE, $mach);
 
 		$ret = $this->execute($job, $mach);
 

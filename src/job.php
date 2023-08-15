@@ -21,10 +21,13 @@ class Job {
 			$j2 = explode(" ", $job);
 			$match = $j1[1] == $j2[1] && $j1[2] == $j2[2];
 
-			if ($mach === FALSE && $match)
-					return TRUE;
-			else if ($mach->name == $m->name && $match)
-					return TRUE;
+			if (!$match)
+				continue;
+
+			if ($mach === FALSE)
+				return TRUE;
+			else if ($mach->name == $m->name)
+				return TRUE;
 		}
 
 		return FALSE;

@@ -259,7 +259,10 @@ function cmd_new()
 
 	Settings::add_machine($m);
 
-	shell_exec("mkdir -p ".MAMA_PATH."/machines/".$name);
+	if (!Util::is_root())
+		out("You must be root to run this command");
+
+	shell_exec("sudo mkdir -p ".MAMA_PATH."/machines/".$name);
 
 	Settings::save();
 

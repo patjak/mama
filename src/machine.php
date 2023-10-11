@@ -287,6 +287,13 @@ class Machine {
 				$val = "";
 
 			if (in_array($val, array_keys($kernels)) || $val == "") {
+				// Make sure the initrd is readable so that the webserver can serve it
+				if (!Util::is_root())
+					out("You must be root to run this command");
+
+				$initrd = MAMA_PATH."/machines/".$this->name."/".$this->os."/boot/initrd-".$this->kernel;
+				passthru("sudo chmod 644 ".$initrd);
+
 				LOCK();
 				$this->load();
 				$this->kernel = $val;

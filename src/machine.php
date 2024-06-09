@@ -274,6 +274,7 @@ class Machine {
 				$this->load();
 				$this->out("Setting OS ".$val);
 				$this->os = $val;
+				$this->kernel = "";
 				$this->save();
 				UNLOCK();
 			} else {

@@ -580,7 +580,7 @@ class Machine {
 		if ($arch == $mama_arch)
 			$kvm_str = "-enable-kvm";
 
-		$cmd = "sudo screen -d -m qemu-system-".$arch." ".$sys_str." ".$kvm_str." ".$cores_str." ".$net_str." -nographic -serial file:".Log::$logfile;
+		$cmd = "sudo screen -d -m qemu-system-".$arch." ".$sys_str." ".$kvm_str." ".$cores_str." ".$net_str." -nographic -serial file:/dev/null";
 		debug($cmd);
 		passthru($cmd);
 

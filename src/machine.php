@@ -292,7 +292,7 @@ class Machine {
 				if (!Util::is_root())
 					out("You must be root to run this command");
 
-				$initrd = MAMA_PATH."/machines/".$this->name."/".$this->os."/boot/initrd-".$this->kernel;
+				$initrd = MAMA_PATH."/machines/".$this->name."/".$this->os."/boot/initrd-".$val;
 				passthru("sudo chmod 644 ".$initrd);
 
 				LOCK();

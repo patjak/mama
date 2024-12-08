@@ -114,6 +114,8 @@ class Job {
 
 		UNLOCK();
 
+		if ($ret == FALSE)
+			fatal("Prepare job FAILED");
 		return $ret;
 	}
 
@@ -176,6 +178,7 @@ class Job {
 
 	public function execute($job, $mach = FALSE, $worker = FALSE)
 	{
+		$error = FALSE;
 		$context = "";
 		$vm_mach = FALSE;
 		$lines = explode(PHP_EOL, $job);
@@ -268,6 +271,7 @@ class Job {
 
 				if ($res != 0) {
 					error("EXECUTION FAILED: ".$line);
+					$error = TRUE;
 					break;
 				}
 			}
@@ -282,6 +286,7 @@ class Job {
 					error("EXECUTION TIMEOUT: ".$line);
 				else
 					error("EXECUTION FAILED: ".$line);
+				$error = TRUE;
 				break;
 			}
 		}
@@ -293,7 +298,7 @@ class Job {
 		if ($worker !== FALSE)
 			$worker->stop();
 
-		return TRUE;
+		return ($error === FALSE);
 	}
 }
 

@@ -68,6 +68,9 @@ function parse_args($argv)
 	case "log":
 		cmd_log($arg);
 		break;
+	case "clear-log":
+		cmd_clear_log($arg);
+		break;
 	case "start":
 		cmd_start($arg);
 		break;
@@ -676,7 +679,18 @@ function cmd_log($arg)
 		$arg = "mama-log";
 
 	if (file_exists(MAMA_PATH."/log/".$arg))
-		passthru("tail -f -n 200 ".MAMA_PATH."/log/".$arg);
+		passthru("cat ".MAMA_PATH."/log/".$arg);
+	else
+		error("No log for ".$arg." exists");
+}
+
+function cmd_clear_log($arg)
+{
+	if (!is_string($arg))
+		$arg = "mama-log";
+
+	if (file_exists(MAMA_PATH."/log/".$arg))
+		passthru("rm ".MAMA_PATH."/log/".$arg);
 	else
 		error("No log for ".$arg." exists");
 }
@@ -926,6 +940,7 @@ new						- add a new machine
 delete [machine]				- delete existing machine
 info [machine]					- show machine detailed info
 log [machine]					- show machine log
+clear-log [machine]				- clear the log for machine
 start [machine]					- boot machine
 start-vm [machine]				- boot virtual instance of machine
 stop [machine]					- triggers power button

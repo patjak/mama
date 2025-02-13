@@ -61,7 +61,7 @@ class Job {
 			$job = str_replace("\$MACH", $mach->name, $job);
 
 		$args = isset(Options::$options["args"]) ? explode(" ", Options::$options["args"]) : array();
-		for ($i = 1; $i < count($args); $i++)
+		for ($i = 1; $i <= count($args); $i++)
 			$job = str_replace("\$ARG".$i, $args[$i - 1], $job);
 
 		$args_str = isset(Options::$options["args"]) ? Options::$options["args"] : "";

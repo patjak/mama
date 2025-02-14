@@ -68,6 +68,9 @@ function parse_args($argv)
 	case "log":
 		cmd_log($arg);
 		break;
+	case "tail":
+		cmd_tail($arg);
+		break;
 	case "clear-log":
 		cmd_clear_log($arg);
 		break;
@@ -680,6 +683,17 @@ function cmd_log($arg)
 
 	if (file_exists(MAMA_PATH."/log/".$arg))
 		passthru("cat ".MAMA_PATH."/log/".$arg);
+	else
+		error("No log for ".$arg." exists");
+}
+
+function cmd_tail($arg)
+{
+	if (!is_string($arg))
+		$arg = "mama-log";
+
+	if (file_exists(MAMA_PATH."/log/".$arg))
+		passthru("tail -f ".MAMA_PATH."/log/".$arg);
 	else
 		error("No log for ".$arg." exists");
 }

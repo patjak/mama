@@ -21,6 +21,6 @@ if (isset($_GET['MAC'])) {
 $server_ip = $_SERVER['SERVER_ADDR'];
 $client_ip = $_SERVER['REMOTE_ADDR'];
 
-passthru("mama ipxe ".$mac." ".$client_ip." ".$server_ip);
+passthru("mama ipxe ".$mac." ".$server_ip." ".$client_ip);
 
 ?>

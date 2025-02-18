@@ -830,10 +830,10 @@ function cmd_ipxe($argv)
 		fatal("No MAC specified");
 
 	if (!isset($argv[3]))
-		fatal("No client IP specified");
+		fatal("No server IP specified");
 
 	if (!isset($argv[4]))
-		fatal("No server IP specified");
+		fatal("No client IP specified");
 
 	$mac = $argv[2];
 	$client_ip = $argv[3];

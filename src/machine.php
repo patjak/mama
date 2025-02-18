@@ -102,7 +102,7 @@ class Machine {
 
 	public function get_power()
 	{
-		return $this->get("output (bool)");
+		return $this->get_power_attribute("output (bool)");
 	}
 
 	public function get_ssh_status()
@@ -329,7 +329,7 @@ class Machine {
 		}
 	}
 
-	public function get($attr)
+	public function get_power_attribute($attr)
 	{
 		// Find power obj
 		$dev = CtlDev::get_by_name($this->pwr_dev);

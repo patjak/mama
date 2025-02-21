@@ -36,6 +36,7 @@ suseSetupProduct
 #--------------------------------------
 suseInsertService sshd
 suseInsertService chronyd
+suseInsertService NetworkManager
 
 #======================================
 # Setup default target, multi-user

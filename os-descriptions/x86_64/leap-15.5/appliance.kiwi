@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<image schemaversion="6.8" name="Leap-15.5_appliance">
+<image schemaversion="7.5" name="Leap-15.5_appliance">
     <description type="system">
         <author>Marcus Schaefer</author>
         <contact>ms@suse.de</contact>
@@ -23,14 +23,14 @@
     <users>
         <user password="$1$wYJUgpM5$RXMMeASDc035eX.NbYWFl0" home="/root" name="root" groups="root"/>
     </users>
-    <repository type="rpm-md" alias="kiwi" priority="1">
-        <source path="obs://Virtualization:Appliances:Builder/openSUSE_Tumbleweed"/>
+    <repository alias="Leap_15_5" imageinclude="true" priority="99">
+        <source path="http://download.opensuse.org/distribution/leap/15.5/repo/oss/"/>
     </repository>
-    <repository type="rpm-md" alias="Leap_15_5" imageinclude="true">
-        <source path="obs://openSUSE:Leap:15.5/standard"/>
+    <repository alias="repo-backports-update" imageinclude="true" priority="99">
+        <source path="http://download.opensuse.org/update/leap/15.5/backports/"/>
     </repository>
-    <repository type="rpm-md" alias="Leap_15_5-update" imageinclude="true">
-        <source path="obs://openSUSE:Leap:15.5:Update/standard"/>
+    <repository alias="repo-sle-update" imageinclude="true" priority="99">
+        <source path="http://download.opensuse.org/update/leap/15.5/sle/"/>
     </repository>
     <packages type="image">
         <package name="checkmedia"/>

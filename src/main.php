@@ -92,6 +92,9 @@ function parse_args($argv)
 	case "set":
 		cmd_set($argv);
 		break;
+	case "get":
+		cmd_get($argv);
+		break;
 	case "reserve":
 		cmd_reserve($arg);
 		break;
@@ -933,6 +936,32 @@ function cmd_set($argv)
 	UNLOCK();
 }
 
+function cmd_get($argv)
+{
+	if (isset($argv[2]))
+		$arg_mach = $argv[2];
+	else
+		$arg_mach = false;
+
+	LOCK();
+	$mach = select_machine($arg_mach);
+
+	/* Machine not found */
+	if ($mach === false) {
+		UNLOCK();
+		return;
+	}
+
+	if (!isset($argv[3]))
+		$attr = Util::get_line("{power | relay | os | params | resources | kernel | reservation | ip | mac}: ");
+	else
+		$attr = $argv[3];
+
+	out($mach->get($attr));
+	UNLOCK();
+
+}
+
 function print_usage($argv)
 { ?>
 Commands:
@@ -966,6 +995,9 @@ set <machine> os <os>				- set os for machine
 set <machine> kernel <kernel>			- set kernel for machine
 set <machine> resources <resources>		- comma separated list of resources to set
 set <machine> params <boot parameters>		- Set additional kernel command line parameters
+get <machine> [power | relay | os | params |	- Get machine attribute
+               resources | kernel | reservation
+               ip | mac ]
 reserve <machine>				- Reserve the machine for the current user
 release <machine>				- Release any reservation you have on the machine
 release-forced <machine>			- Release the machine even if you didn't reserve it

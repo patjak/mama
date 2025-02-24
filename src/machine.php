@@ -329,6 +329,32 @@ class Machine {
 		}
 	}
 
+	public function get($attr)
+	{
+		switch ($attr) {
+		case "params":
+			return $this->boot_params;
+		case "os":
+			return $this->os;
+		case "kernel":
+			return $this->kernel;
+		case "power":
+			return $this->pwr_dev;
+		case "relay":
+			return $this->rly_dev;
+		case "resources":
+			return $this->resources;
+		case "reservation":
+			return $this->reservation;
+		case "ip":
+			return $this->get_ip();
+		case "mac":
+			return $this->mac;
+		}
+
+		$this->error("Invalid attribute");
+	}
+
 	public function get_power_attribute($attr)
 	{
 		// Find power obj

@@ -606,6 +606,9 @@ class Machine {
 
 		unset($out);
 		exec("ps ax | grep qemu | grep -v SCREEN | grep ".$this->mac, $out, $res);
+		if (!isset($out[0]))
+			return;
+
 		$pid = explode(" ", $out[0])[0];
 
 		$this->out("Killing VM with pid ".$pid);

@@ -13,7 +13,7 @@ class Machine {
 		$stop_timeout = 30,
 
 		// How long an ssh command is allowed to execute (in minutes)
-		$ssh_cmd_timeout = 4 * 60,
+		$ssh_cmd_timeout = 1 * 60,
 
 		// How long power btn must be pressed to force power off
 		$rly_force_off_delay = 8,

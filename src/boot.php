@@ -1,5 +1,7 @@
 <?php
 
+$server_ip = $_SERVER['SERVER_ADDR'];
+
 if (isset($_GET['MAC'])) {
 	$mac = $_GET['MAC'];
 } else {
@@ -12,15 +14,16 @@ if (isset($_GET['MAC'])) {
 
 	if ($mac == "") {
 		echo "#!ipxe\n";
-		echo "echo No MAC specified";
+		echo "echo No MAC specified\n";
 		echo "shell";
 		exit();
 	}
 }
 
-$server_ip = $_SERVER['SERVER_ADDR'];
-$client_ip = $_SERVER['REMOTE_ADDR'];
-
-passthru("mama ipxe ".$mac." ".$server_ip." ".$client_ip);
+if (isset($_GET['BOOTINFO'])) {
+	passthru("mama bootinfo ".$mac." ".$server_ip);
+} else {
+	passthru("mama ipxe ".$mac." ".$server_ip);
+}
 
 ?>

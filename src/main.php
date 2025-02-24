@@ -110,6 +110,9 @@ function parse_args($argv)
 	case "ipxe":
 		cmd_ipxe($argv);
 		break;
+	case "bootinfo":
+		cmd_bootinfo($argv);
+		break;
 	default:
 		out("Invalid command\n");
 	}
@@ -828,36 +831,11 @@ function cmd_wait($arg)
 	$mach->wait();
 }
 
-// Generate the ipxe commands needed to boot a machine
-function cmd_ipxe($argv)
+function bootinfo(&$kernel, &$initrd, &$append, $mac, $server_ip)
 {
-	out("#!ipxe");
-
-	if (!isset($argv[2]))
-		fatal("No MAC specified");
-
-	if (!isset($argv[3]))
-		fatal("No server IP specified");
-
-	if (!isset($argv[4]))
-		fatal("No client IP specified");
-
-	$mac = $argv[2];
-	$client_ip = $argv[3];
-	$server_ip = $argv[4];
-
 	$mach = Machine::find_by_mac($mac);
 	if ($mach === false)
-		fatal("echo FATAL ERROR: Machine is not configured in Mama!");
-
-	// Store the ip for this session
-	if (Util::is_valid_ip($client_ip)) {
-		LOCK();
-		$mach->load();
-		$mach->ip = $client_ip;
-		$mach->save();
-		UNLOCK();
-	}
+		fatal("Machine is not configured in Mama!");
 
 	$path = "http://".$server_ip."/mama/machines/$mach->name/".$mach->os;
 	$root = "root=nfs:".$server_ip.":".MAMA_PATH."/machines/".$mach->name."/".$mach->os.",rw";
@@ -866,9 +844,7 @@ function cmd_ipxe($argv)
 	if ($mach->is_vm())
 		$console .= "console=tty0 console=ttyS0";
 
-	$net = "rd.neednet=1 ifname=bootnet:".$mac." bootdev=bootnet ".
-		"ip=".$client_ip."::".$server_ip.":255.255.255.0:".$mach->name.":bootnet:off ".
-		"systemd.hostname=".$mach->name;
+	$net = "rd.neednet=1 systemd.hostname=".$mach->name." ip=dhcp";
 
 	if ($mach->kernel == "") {
 		$kernel_filename = "kernel-mama";
@@ -881,12 +857,56 @@ function cmd_ipxe($argv)
 	$params = $root." ".$console." ".$net." ".$mach->boot_params;
 
 	// IMPORTANT: For UEFI to boot properly initrd=<filename> must be specified
-	$kernel = $path."/boot/".$kernel_filename." ".$params." initrd=".$initrd_filename;
+	$kernel = $path."/boot/".$kernel_filename;
 	$initrd = $path."/boot/".$initrd_filename;
+	$append = $params." initrd=".$initrd_filename;
+}
+
+// Generate the ipxe commands needed to boot a machine
+function cmd_ipxe($argv)
+{
+	out("#!ipxe");
+
+	if (!isset($argv[2]))
+		fatal("No MAC specified");
+
+	if (!isset($argv[3]))
+		fatal("No server IP specified");
+
+	$mac = $argv[2];
+	$server_ip = $argv[3];
+
+	$kernel = "";
+	$initrd = "";
+	$append = "";
+
+	bootinfo($kernel, $initrd, $append, $mac, $server_ip);
 
 	out("initrd ".$initrd." ||");
-	out("kernel ".$kernel." ||");
+	out("kernel ".$kernel." ".$append." ||");
 	out("boot || shell");
+}
+
+function cmd_bootinfo($argv)
+{
+	$kernel = "";
+	$initrd = "";
+	$append = "";
+
+	if (!isset($argv[2]))
+		fatal("No MAC specified");
+
+	if (!isset($argv[3]))
+		fatal("No server IP specified");
+
+	$mac = $argv[2];
+	$server_ip = $argv[3];
+
+	bootinfo($kernel, $initrd, $append, $mac, $server_ip);
+
+	out($initrd);
+	out($kernel);
+	out($append);
 }
 
 function cmd_set($argv)

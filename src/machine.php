@@ -103,6 +103,17 @@ class Machine {
 		return $ip;
 	}
 
+	public function set_ip($ip)
+	{
+		if (Util::is_valid_ip($ip)) {
+			LOCK();
+			$this->load();
+			$this->ip = $ip;
+			$this->save();
+			UNLOCK();
+		}
+	}
+
 	public function get_power()
 	{
 		return $this->get_power_attribute("output (bool)");
@@ -143,8 +154,12 @@ class Machine {
 	{
 		$ip = $this->get_ip();
 
-		if ($ip === false)
+		if ($ip === false) {
+			$this->set_ip("");
 			return "offline";
+		} else {
+			$this->set_ip($ip);
+		}
 
 		exec("ping -w 3 -c 1 ".$ip, $tmp, $ret);
                 if ($ret == 0) {

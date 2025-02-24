@@ -709,7 +709,12 @@ class Machine {
 		$status = $this->get_status();
 
 		if ($status == "online") {
-			if ($this->is_vm())
+			// When the machine is controlled by a power device it is better to halt
+			// the system and cut the power. That way all the capacitors gets drained
+			// and the system immediately starts again when power is resumed.
+			// For any system without power device we prefer the poweroff command
+			// since that also terminates VMs automatically.
+			if ($this->pwr_dev == "")
 				$this->ssh_cmd("poweroff");
 			else
 				$this->ssh_cmd("halt");

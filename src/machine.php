@@ -216,8 +216,6 @@ class Machine {
 	public function clear()
 	{
 		LOCK();
-		$this->stop();
-
 		$this->load();
 		$this->ip = "";
 		$this->is_started = "";
@@ -708,13 +706,8 @@ class Machine {
 				$this->set("power", 0);
 			} else {
 				$this->out("No control device available to turn off the machine");
-				LOCK();
-				$this->load();
-				$this->ip = "";
-				$this->is_started = "";
-				$this->save();
-				UNLOCK();
-
+				$this->clear();
+			
 				return FALSE;
 			}
 		}

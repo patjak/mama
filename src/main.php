@@ -757,7 +757,10 @@ function cmd_clear($arg)
 	if ($mach === false)
 		return;
 
+	LOCK();
+	$mach->stop();
 	$mach->clear();
+	UNLOCK();
 }
 
 function cmd_connect($arg)

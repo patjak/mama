@@ -75,8 +75,7 @@ class Machine {
 				return $ip;
 		}
 
-		// If we fail to get IP from MAC we fallback to returning the stored IP
-		return $this->get_ip();
+		return FALSE;
 	}
 
 	// Reload the settings file and update this machine with any new data
@@ -95,9 +94,13 @@ class Machine {
 
 	public function get_ip()
 	{
-		$this->update_from_xml();
+		$ip = $this->get_ip_from_mac();
+		if ($ip === FALSE) {
+			$this->update_from_xml();
+			return Util::is_valid_ip($this->ip);
+		}
 
-		return Util::is_valid_ip($this->ip);
+		return $ip;
 	}
 
 	public function get_power()

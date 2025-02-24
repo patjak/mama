@@ -234,6 +234,7 @@ class Settings {
 		$m->addChild("boot_params", $mach->boot_params);
 		$m->addChild("job", $mach->job);
 		$m->addChild("startcmd", $mach->startcmd);
+		$m->addChild("stopcmd", $mach->stopcmd);
 
 		Settings::save();
 		self::unlock();

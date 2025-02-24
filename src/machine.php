@@ -2,7 +2,7 @@
 
 class Machine {
 	public $name, $mac, $ip, $is_started, $arch, $os, $kernel, $pwr_dev, $pwr_slot,
-	       $rly_dev, $rly_slot, $reservation, $resources, $boot_params, $only_vm, $job, $startcmd;
+	       $rly_dev, $rly_slot, $reservation, $resources, $boot_params, $only_vm, $job, $startcmd, $stopcmd;
 
 	// Tunables for how to manage machines
 	public static
@@ -192,6 +192,7 @@ class Machine {
 		$this->only_vm = (string)$obj->only_vm;
 		$this->job = (string)$obj->job;
 		$this->startcmd = (string)$obj->startcmd;
+		$this->stopcmd = (string)$obj->stopcmd;
 	}
 
 	public function save()
@@ -246,6 +247,8 @@ class Machine {
 		out("Resources:\t".$this->resources);
 		if ($this->startcmd != "")
 			out("Start command:\t".$this->startcmd);
+		if ($this->stopcmd != "")
+			out("Stop command:\t".$this->stopcmd);
 		out("Boot params:\t".$this->boot_params);
 		if ($this->job != "")
 			out("Running job:\t".$this->job);
@@ -357,6 +360,17 @@ class Machine {
 			$this->save();
 			UNLOCK();
 			break;
+		case "stopcmd":
+			out("Current stop command: ".$this->stopcmd);
+			if ($val == "")
+				$val = Util::get_line("Enter new stop command: ");
+
+			LOCK();
+			$this->load();
+			$this->stopcmd = $val;
+			$this->save();
+			UNLOCK();
+			break;
 		}
 	}
 
@@ -383,6 +397,8 @@ class Machine {
 			return $this->mac;
 		case "startcmd":
 			return $this->startcmd;
+		case "stopcmd":
+			return $this->stopcmd;
 		}
 
 		$this->error("Invalid attribute");
@@ -699,7 +715,7 @@ class Machine {
 				$this->ssh_cmd("halt");
 		}
 
-		if ($status == "unreachable") {
+		if ($status == "unreachable" && $this->stopcmd == "") {
 			if ($this->rly_dev != "") {
 				$this->set("relay", 8);
 			} else if ($this->pwr_dev != "") {
@@ -719,19 +735,19 @@ class Machine {
 				$this->kill_vm();
 		}
 
-		// Always power off the machine
-		if ($this->is_only_vm())
-			$this->kill_vm();
-		else
-			$this->set("power", 0);
 
-		// Clear the ip and is_started field in the xml
-		LOCK();
-		$this->load();
-		$this->ip = "";
-		$this->is_started = "";
-		$this->save();
-		UNLOCK();
+		// Always power off the machine
+		if ($this->stopcmd == "") {
+			if ($this->is_only_vm())
+				$this->kill_vm();
+			else
+				$this->set("power", 0);
+		} else {
+			out($this->stopcmd);
+			passthru($this->stopcmd." > /dev/null &");
+		}
+
+		$this->clear();
 
 		return TRUE;
 	}

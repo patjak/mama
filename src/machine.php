@@ -587,7 +587,7 @@ class Machine {
 		$num_cores = (int)shell_exec("nproc");
 		$cores_str = "-smp ".$num_cores;
 		$sys_str = "-m ".(1024 * 8);
-		$net_str = "-boot n -netdev tap,id=net0,ifname=tap".
+		$net_str = "-netdev tap,id=net0,ifname=tap".
 			   $tap_id.",script=no,downscript=no -device virtio-net,netdev=net0,mac=".$this->mac;
 		$os_arch = explode("/", $this->os)[0];
 
@@ -599,25 +599,41 @@ class Machine {
 		case "i686":
 			$arch = "i386";
 			$arch = "x86_64";
+			$net_str .= " -boot n";
 			break;
 		case "aarch64":
 			$arch = "aarch64";
 			$sys_str .= " -machine virt -cpu cortex-a57 -bios /usr/share/qemu/qemu-uefi-aarch64.bin";
 			$cores_str = "-smp 8";
+			$net_str .= " -boot n";
+			break;
+		case "ppc64":
+			$arch = "ppc64";
+			$sys_str .= " -M pseries";
+
+			// There is no ppc support in ipxe so we must boot by providing the kernel and initrd directly
+			if ($this->kernel == "") {
+				$kernel_filename = "kernel-mama";
+				$initrd_filename = "initrd-mama";
+			} else {
+				$kernel_filename = "vmlinuz-".$this->kernel;
+				$initrd_filename = "initrd-".$this->kernel;
+			}
+			$kernel = $this->get_kernel_path().$kernel_filename;
+			$initrd = $this->get_kernel_path().$initrd_filename;
+			$net_str .= " -kernel ".$kernel." -initrd ".$initrd." -append \"".$this->boot_params." ip=dhcp rd.neednet=1 systemd.hostname=".$this->name." root=nfs:".MAMA_HOST.":".MAMA_PATH."/machines/".$this->name."/".$this->os.",rw\"";
 			break;
 		default:
 			$arch = "x86_64";
+			$net_str .= " -boot n";
 		}
 
 		if ($arch == $mama_arch)
 			$kvm_str = "-enable-kvm";
 
 		$cmd = "sudo screen -d -m qemu-system-".$arch." ".$sys_str." ".$kvm_str." ".$cores_str." ".$net_str." -nographic -serial file:/dev/null";
-		debug($cmd);
+		$this->out($cmd);
 		passthru($cmd);
-
-		// echo "screen -d -m qemu-system-".$arch." ".$sys_str." ".$net_str." -nographic -serial file:/tmp/mama-virt-out-".$this->name."\n";
-		// passthru("qemu-system-".$arch." ".$sys_str." ".$net_str." -nographic -serial mon:stdio");
 
 		$ret = $this->wait_for_status("online", self::$start_timeout);
 		if (!$ret)

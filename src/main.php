@@ -926,7 +926,7 @@ function cmd_set($argv)
 	}
 
 	if (!isset($argv[3]))
-		$attr = Util::get_line("{power | relay | os}: ");
+		$attr = Util::get_line("{power | relay | os | kernel | resources | params }: ");
 	else
 		$attr = $argv[3];
 

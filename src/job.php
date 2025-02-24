@@ -178,6 +178,7 @@ class Job {
 
 	public function execute($job, $mach = FALSE, $worker = FALSE)
 	{
+		$SSH_RET = 0; // Stores the return code from the last executed command
 		$error = FALSE;
 		$context = "";
 		$vm_mach = FALSE;
@@ -276,10 +277,15 @@ class Job {
 				}
 			}
 
+			// Replace any $RET with the last return code
+			$line = str_replace("\$RET", $SSH_RET, $line);
+
 			if ($context == "DEVICE")
 				$res = $mach->ssh_cmd($line);
 			else if ($context == "WORKER")
 				$res = $worker->ssh_cmd($line);
+
+			$SSH_RET = $res; // Store the return code for insertion into next command
 
 			if ($res != 0) {
 				if ($res == 124)

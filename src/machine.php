@@ -169,6 +169,7 @@ class Machine {
 				return "unreachable";
 		}
 
+		$this->set_ip("");
 		return "offline";
 	}
 

@@ -2,7 +2,7 @@
 
 class Machine {
 	public $name, $mac, $ip, $is_started, $arch, $os, $kernel, $pwr_dev, $pwr_slot,
-	       $rly_dev, $rly_slot, $reservation, $resources, $boot_params, $only_vm, $job;
+	       $rly_dev, $rly_slot, $reservation, $resources, $boot_params, $only_vm, $job, $startcmd;
 
 	// Tunables for how to manage machines
 	public static
@@ -191,6 +191,7 @@ class Machine {
 		$this->boot_params = (string)$obj->boot_params;
 		$this->only_vm = (string)$obj->only_vm;
 		$this->job = (string)$obj->job;
+		$this->startcmd = (string)$obj->startcmd;
 	}
 
 	public function save()
@@ -245,6 +246,8 @@ class Machine {
 			out("Relay device:\t".$this->rly_dev.",".$this->rly_slot);
 		out("Reserved by:\t".$this->reservation);
 		out("Resources:\t".$this->resources);
+		if ($this->startcmd != "")
+			out("Start command:\t".$this->startcmd);
 		out("Boot params:\t".$this->boot_params);
 		if ($this->job != "")
 			out("Running job:\t".$this->job);
@@ -345,6 +348,17 @@ class Machine {
 			$this->save();
 			UNLOCK();
 			break;
+		case "startcmd":
+			out("Current start command: ".$this->startcmd);
+			if ($val == "")
+				$val = Util::get_line("Enter new start command: ");
+
+			LOCK();
+			$this->load();
+			$this->startcmd = $val;
+			$this->save();
+			UNLOCK();
+			break;
 		}
 	}
 
@@ -369,9 +383,19 @@ class Machine {
 			return $this->get_ip();
 		case "mac":
 			return $this->mac;
+		case "startcmd":
+			return $this->startcmd;
 		}
 
 		$this->error("Invalid attribute");
+	}
+
+	public function get_os_arch()
+	{
+		if ($this->os == "")
+			return "";
+
+		return explode("/", $this->os)[0];
 	}
 
 	public function get_power_attribute($attr)
@@ -516,7 +540,7 @@ class Machine {
 		$this->save();
 		UNLOCK();
 
-		if ($status == "offline") {
+		if ($this->startcmd == "" && $status == "offline") {
 			if ($this->pwr_dev != "") {
 				if ($this->get_power() != 0) {
 					$this->set("power", 0);
@@ -531,8 +555,14 @@ class Machine {
 
 			if ($this->rly_dev != "")
 				$this->set("relay", 1);
-		}
+		} else if ($this->startcmd != "" && $status == "offline") {
+			$startcmd = $this->startcmd;
+			$startcmd = str_replace("\$OS_ARCH", $this->get_os_arch(), $startcmd);
+			out("Start command: ".$startcmd);
 
+			// The command runs in the background so that we can start waiting for the machine
+			passthru($startcmd." > /dev/null &");
+		}
 
 		$ret = $this->wait_for_status("online", self::$start_timeout);
 		if ($this->get_status() == "offline")
@@ -660,9 +690,6 @@ class Machine {
 
 	public function stop()
 	{
-		if (!$this->is_vm() && $this->get_power() == 0)
-			return TRUE;
-
 		$this->out("Stopping machine");
 
 		$status = $this->get_status();

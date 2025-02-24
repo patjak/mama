@@ -528,6 +528,9 @@ class Machine {
 	// Is the machine running as a VM?
 	public function is_vm()
 	{
+		if ($this->is_only_vm())
+			return TRUE;
+
 		unset($out);
 		exec("ps aux | grep qemu | grep ".$this->mac, $out, $res);
 		if (count($out) > 1)

@@ -13,6 +13,7 @@ class Machine {
 		$stop_timeout = 30,
 
 		// How long an ssh command is allowed to execute (in minutes)
+		// Can be overridden with --no-ssh-timeout
 		$ssh_cmd_timeout = 1 * 60,
 
 		// How long power btn must be pressed to force power off
@@ -776,11 +777,16 @@ class Machine {
 
 	public function ssh_cmd($cmd)
 	{
+		$timeout_str = isset(Options::$options["no-ssh-timeout"]) ?
+			"" : "timeout --foreground ".self::$ssh_cmd_timeout."m";
+
 		// Sometimes we don't get the correct status immediately so wait a little bit for it
 		if ($this->wait_for_status("online", 30, TRUE)) {
 			out("(".$this->name.") ssh: ".$cmd);
 			$log_str = Log::$logfile !== FALSE ? " &>> ".Log::$logfile : "";
-			passthru("timeout --foreground ".self::$ssh_cmd_timeout."m ssh -q -o \"UserKnownHostsFile=/dev/null\" ".
+
+
+			passthru($timeout_str." ssh -q -o \"UserKnownHostsFile=/dev/null\" ".
 				"-o \"ConnectTimeout=10\" ".
 				"-o \"StrictHostKeyChecking=no\" root@".$this->get_ip().
 				" -t \"".$cmd."\" ".$log_str, $res);

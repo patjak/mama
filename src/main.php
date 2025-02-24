@@ -2,7 +2,8 @@
 
 $opts = array(	"args:",
 		"debug",
-		"packages:");
+		"packages:",
+		"no-ssh-timeout");
 
 $cmds = Options::parse($argv, $opts);
 
@@ -999,6 +1000,7 @@ list-jobs					- list available jobs
 log [machine]					- print log file
 job <job> prepare <arch> <os> [worker]		- Execute prepare part of job for arch and os
   [--args=] - Additional arguments to pass along
+  [--no-ssh-timeout] - Allows ssh commands to run indefinitely
 
 job <job> run <machine>	<arch> <os>		- Execute job on specified machine
 build-os <arch> <os> [worker]			- build a deployable os locally or on specified machine

@@ -123,6 +123,7 @@ function cmd_list()
 	out(Util::pad_str("No", 4), TRUE);
 	out(Util::pad_str("Name", 16), TRUE);
 	out(Util::pad_str("IP", 16), TRUE);
+	out(Util::pad_str("MAC", 18), TRUE);
 	out(Util::pad_str("State", 10), TRUE);
 	out(Util::pad_str("Pwr", 6), TRUE);
 	out(Util::pad_str("VM", 4), TRUE);
@@ -154,6 +155,9 @@ function cmd_list()
 
 		// IP 
 		out(Util::pad_str($ip, 16), TRUE);
+
+		// MAC
+		out(Util::pad_str($mach->mac, 18), TRUE);
 
 		// State
 		out(Util::pad_str($mach->get_status(), 10), TRUE);

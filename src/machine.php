@@ -696,8 +696,10 @@ class Machine {
 		passthru($cmd);
 
 		$ret = $this->wait_for_status("online", self::$start_timeout);
-		if (!$ret)
+		if (!$ret) {
 			$this->kill_vm();
+			$this->clear();
+		}
 
 		return $ret;
 	}

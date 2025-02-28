@@ -609,7 +609,7 @@ class Machine {
 		$pid = explode(" ", $out[0])[0];
 
 		$this->out("Killing VM with pid ".$pid);
-		exec("kill ".$pid);
+		exec("sudo kill ".$pid);
 	}
 
 	public function start_vm()

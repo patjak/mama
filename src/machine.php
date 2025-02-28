@@ -66,40 +66,36 @@ class Machine {
 
 	public function get_ip_from_mac()
 	{
-		// Retry a couple of times for luck
-		for ($i = 0; $i < 5; $i++) {
-			$res = shell_exec("ip -4 neighbor | grep \"".$this->mac."\" | grep REACHABLE | cut -d\" \" -f1");
-			$res = trim($res);
+		$ip = FALSE;
 
-			$ip = Util::is_valid_ip($res);
-			if ($ip !== FALSE)
-				return $ip;
+		exec("ip -4 neighbor | grep \"".$this->mac."\"", $res, $code);
+		foreach ($res as $row) {
+			$row = explode(" ", $row);
+			$ip = $row[0];
+			$state = $row[5];
+			if ($state == "REACHABLE")
+				return Util::is_valid_ip($ip);
 		}
 
 		return FALSE;
 	}
 
-	// Reload the settings file and update this machine with any new data
-	public function update_from_xml()
-	{
-		// Reload the settings file since the ip might have been updated
-		Settings::load();
-
-		for ($i = 0; $i < count(Settings::$settings->machine); $i++) {
-			$m = Settings::$settings->machine[$i];
-
-			if ($m->mac == $this->mac)
-				$this->fill_from_xmlobj($m);
-		}
-	}
-
 	public function get_ip()
 	{
 		$ip = $this->get_ip_from_mac();
+
+		LOCK();
+
 		if ($ip === FALSE) {
-			$this->update_from_xml();
-			return Util::is_valid_ip($this->ip);
+			// Use stored ip as last resort
+			$this->load();
+			if ($this->ip != "")
+				$ip = $this->ip;
+		} else {
+			$this->ip = $ip;
+			$this->save();
 		}
+		UNLOCK();
 
 		return $ip;
 	}

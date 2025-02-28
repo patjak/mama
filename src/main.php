@@ -1027,14 +1027,14 @@ start-vm [machine]				- boot virtual instance of machine
 stop [machine]					- triggers power button
 clear [machine]					- stop machine and clear stale data (ip, job, etc)
 connect [machine]				- connect to machine with ssh
-set <machine> power <value>			- control wall power
-set <machine> relay <seconds>			- connect the relay for x seconds
-set <machine> os <os>				- set os for machine
-set <machine> kernel <kernel>			- set kernel for machine
-set <machine> resources <resources>		- comma separated list of resources to set
-set <machine> params <boot parameters>		- Set additional kernel command line parameters
-set <machine> startcmd <command>		- Run a command instead of the normal start routine
-set <machine> stopcmd <command>			- Run a command after normal halt/poweroff of machine
+set <machine>	power <value>			- control wall power
+		relay <seconds>			- connect the relay for x seconds
+		os <os>				- set os for machine
+		kernel <kernel>			- set kernel for machine
+		resources <resources>		- comma separated list of resources to set
+		params <boot parameters>	- Set additional kernel command line parameters
+		startcmd <command>		- Run a command instead of the normal start routine
+		stopcmd <command>		- Run a command after normal halt/poweroff of machine
 get <machine> [power | relay | os | params |	- Get machine attribute
                resources | kernel | reservation
                ip | mac ]

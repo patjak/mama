@@ -124,22 +124,27 @@ function cmd_list()
 	$pwr_devs = array();
 
 	$i = 1;
-	out(Util::pad_str("No", 4), TRUE);
-	out(Util::pad_str("Name", 16), TRUE);
-	out(Util::pad_str("IP", 16), TRUE);
-	out(Util::pad_str("MAC", 18), TRUE);
-	out(Util::pad_str("State", 10), TRUE);
-	out(Util::pad_str("Pwr", 6), TRUE);
-	out(Util::pad_str("VM", 4), TRUE);
+	$len = 0;
+	$len += out(Util::pad_str("No", 4), TRUE);
+	$len += out(Util::pad_str("Name", 16), TRUE);
+	$len += out(Util::pad_str("IP", 16), TRUE);
+	$len += out(Util::pad_str("MAC", 18), TRUE);
+	$len += out(Util::pad_str("State", 8), TRUE);
+	$len += out(Util::pad_str("On", 5), TRUE);
+	$len += out(Util::pad_str("Pwr", 6), TRUE);
+	$len += out(Util::pad_str("VM", 4), TRUE);
 	out(Util::pad_str("Job", 32));
-	out("------------------------------------------------------------------------");
+	$len += 8;
+	for($i = 0; $i < $len; $i++)
+		out("-", TRUE);
+	out("");
 
 	$machs = Machine::get_all();
 
 	foreach ($machs as $mach) {
 		$pwr_dev = CtlDev::get_by_name($mach->pwr_dev);
 
-		if ($pwr_dev !== FALSE && !isset($pwr_devs[$mach->pwr_dev]))
+		if ($mach->is_started == 1 && $pwr_dev !== FALSE && !isset($pwr_devs[$mach->pwr_dev]))
 			$pwr_devs[$mach->pwr_dev] = $pwr_dev->get_sensors_all_slots();
 
 		if (!isset($pwr_devs[$mach->pwr_dev]) || $pwr_devs[$mach->pwr_dev] === NULL) {
@@ -164,7 +169,11 @@ function cmd_list()
 		out(Util::pad_str($mach->mac, 18), TRUE);
 
 		// State
-		out(Util::pad_str($mach->get_status(), 10), TRUE);
+		out(Util::pad_str($mach->get_status(), 8), TRUE);
+
+		// Started
+		$started = $mach->is_started == 1 ? "Yes" : "";
+		out(Util::pad_str($started, 5), TRUE);
 
 		// Power
 		if (is_numeric($power)) {

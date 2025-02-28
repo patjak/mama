@@ -98,6 +98,8 @@ function out($msg, $no_eol = FALSE, $timestamp = TRUE)
 		$msg .= "\n";
 
 	Log::print_msg($msg, LOG_LVL_DEFAULT, $timestamp);
+
+	return strlen($msg);
 }
 
 function error($msg, $no_eol = FALSE, $timestamp = TRUE)
@@ -106,6 +108,8 @@ function error($msg, $no_eol = FALSE, $timestamp = TRUE)
 		$msg .= "\n";
 
 	Log::print_msg($msg, LOG_LVL_ERROR, $timestamp);
+
+	return strlen($msg);
 }
 
 function fatal($msg, $errno = 1)
@@ -123,6 +127,8 @@ function debug($msg, $no_eol = FALSE, $timestamp = FALSE)
 
 	if (DEBUG)
 		Log::print_msg($msg, LOG_LVL_DEBUG, $timestamp);
+
+	return strlen($msg);
 }
 
 ?>

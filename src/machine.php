@@ -728,7 +728,7 @@ class Machine {
 			} else {
 				$this->out("No control device available to turn off the machine");
 				$this->clear();
-			
+
 				return FALSE;
 			}
 		}

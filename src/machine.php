@@ -68,6 +68,10 @@ class Machine {
 	{
 		$ip = FALSE;
 
+		// We never return an ip for stopped machine
+		if ($this->is_started != 1)
+			return FALSE;
+
 		exec("ip -4 neighbor | grep \"".$this->mac."\"", $res, $code);
 		foreach ($res as $row) {
 			$row = explode(" ", $row);
@@ -92,8 +96,11 @@ class Machine {
 			if ($this->ip != "")
 				$ip = $this->ip;
 		} else {
-			$this->ip = $ip;
-			$this->save();
+			if ($this->ip != $ip) {
+				debug("Changing IP ".$this->ip." -> ".$ip);
+				$this->ip = $ip;
+				$this->save();
+			}
 		}
 		UNLOCK();
 

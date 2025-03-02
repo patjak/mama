@@ -141,7 +141,7 @@ function cmd_list()
 	$len += out(Util::pad_str("VM", 4), TRUE);
 	out(Util::pad_str("Job", 32));
 	$len += 8;
-	for($i = 0; $i < $len; $i++)
+	for( $j = 0; $j < $len; $j++)
 		out("-", TRUE);
 	out("");
 

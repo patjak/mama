@@ -2,7 +2,7 @@
 
 class Machine {
 	public $name, $mac, $ip, $is_started, $arch, $os, $kernel, $pwr_dev, $pwr_slot,
-	       $rly_dev, $rly_slot, $reservation, $resources, $boot_params, $only_vm, $job, $startcmd, $stopcmd;
+	       $rly_dev, $rly_slot, $reservation, $resources, $boot_params, $vm_params, $only_vm, $job, $startcmd, $stopcmd;
 
 	// Tunables for how to manage machines
 	public static
@@ -193,6 +193,7 @@ class Machine {
 		$this->reservation = (string)$obj->reservation;
 		$this->resources = (string)$obj->resources;
 		$this->boot_params = (string)$obj->boot_params;
+		$this->vm_params = (string)$obj->vm_params;
 		$this->only_vm = (string)$obj->only_vm;
 		$this->job = (string)$obj->job;
 		$this->startcmd = (string)$obj->startcmd;
@@ -254,6 +255,8 @@ class Machine {
 		if ($this->stopcmd != "")
 			out("Stop command:\t".$this->stopcmd);
 		out("Boot params:\t".$this->boot_params);
+		if ($this->vm_params != "")
+			out("VM params:\t".$this->vm_params);
 		if ($this->job != "")
 			out("Running job:\t".$this->job);
 		out("Power sensors:");
@@ -353,6 +356,17 @@ class Machine {
 			$this->save();
 			UNLOCK();
 			break;
+		case "vmparams":
+			out("Current VM parameters: ".$this->vm_params);
+			if ($val == "")
+				$val = Util::get_line("Enter new VM parameters: ");
+
+			LOCK();
+			$this->load();
+			$this->vm_params = $val;
+			$this->save();
+			UNLOCK();
+			break;
 		case "startcmd":
 			out("Current start command: ".$this->startcmd);
 			if ($val == "")
@@ -383,6 +397,8 @@ class Machine {
 		switch ($attr) {
 		case "params":
 			return $this->boot_params;
+		case "vmparams":
+			return $this->vm_params;
 		case "os":
 			return $this->os;
 		case "kernel":
@@ -698,7 +714,7 @@ class Machine {
 		if ($arch == $mama_arch)
 			$kvm_str = "-enable-kvm";
 
-		$cmd = "sudo screen -d -m qemu-system-".$arch." ".$sys_str." ".$kvm_str." ".$cores_str." ".$net_str." -nographic -serial file:/dev/null";
+		$cmd = "sudo screen -d -m qemu-system-".$arch." ".$sys_str." ".$kvm_str." ".$cores_str." ".$net_str." -nographic -serial file:/dev/null ".$this->vm_params;
 		$this->out($cmd);
 		passthru($cmd);
 

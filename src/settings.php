@@ -234,6 +234,7 @@ class Settings {
 		$m->addChild("reservation", $mach->reservation);
 		$m->addChild("resources", $mach->resources);
 		$m->addChild("boot_params", $mach->boot_params);
+		$m->addChild("vm_params", $mach->vm_params);
 		$m->addChild("job", $mach->job);
 		$m->addChild("startcmd", $mach->startcmd);
 		$m->addChild("stopcmd", $mach->stopcmd);

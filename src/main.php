@@ -1039,11 +1039,12 @@ set <machine>	power <value>			- control wall power
 		kernel <kernel>			- set kernel for machine
 		resources <resources>		- comma separated list of resources to set
 		params <boot parameters>	- Set additional kernel command line parameters
+		vmparams <VM parameters>	- Add additional QEMU command line parameters
 		startcmd <command>		- Run a command instead of the normal start routine
 		stopcmd <command>		- Run a command after normal halt/poweroff of machine
 get <machine> [power | relay | os | params |	- Get machine attribute
                resources | kernel | reservation
-               ip | mac ]
+               ip | mac | vmparams ]
 reserve <machine>				- Reserve the machine for the current user
 release <machine>				- Release any reservation you have on the machine
 release-forced <machine>			- Release the machine even if you didn't reserve it

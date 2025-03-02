@@ -35,7 +35,8 @@ class Settings {
 		}
 
 		self::$lock++;
-		debug("Aquiring lock: ".self::$lock);
+		if (DEBUG_LOCK)
+			out("Aquiring lock: ".self::$lock);
 
 		return TRUE;
 	}
@@ -47,7 +48,8 @@ class Settings {
 			fatal("mama.xml is not locked");
 
 		self::$lock--;
-		debug("Releasing lock: ".self::$lock);
+		if (DEBUG_LOCK)
+			out("Releasing lock: ".self::$lock);
 
 		if (self::$lock == 0) {
 			fclose(self::$stream);

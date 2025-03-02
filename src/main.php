@@ -150,7 +150,7 @@ function cmd_list()
 	foreach ($machs as $mach) {
 		$pwr_dev = CtlDev::get_by_name($mach->pwr_dev);
 
-		if ($mach->is_started == 1 && $pwr_dev !== FALSE && !isset($pwr_devs[$mach->pwr_dev]))
+		if ($pwr_dev !== FALSE && !isset($pwr_devs[$mach->pwr_dev]))
 			$pwr_devs[$mach->pwr_dev] = $pwr_dev->get_sensors_all_slots();
 
 		if (!isset($pwr_devs[$mach->pwr_dev]) || $pwr_devs[$mach->pwr_dev] === NULL) {

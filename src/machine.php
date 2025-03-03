@@ -584,7 +584,6 @@ class Machine {
 				$this->set("power", 1);
 			} else if ($this->rly_dev == "") {
 				$this->out("No control device available to turn on the machine");
-				return FALSE;
 			}
 
 			if ($this->rly_dev != "")

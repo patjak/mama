@@ -786,7 +786,7 @@ function cmd_connect($arg)
 	if ($mach === false)
 		return;
 
-	passthru("ssh -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" root@".$mach->get_ip_from_mac());
+	passthru("ssh -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" root@".$mach->get_ip());
 }
 
 function cmd_reserve($arg)

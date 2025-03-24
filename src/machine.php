@@ -628,7 +628,8 @@ class Machine {
 		if (!isset($out[0]))
 			return;
 
-		$pid = explode(" ", $out[0])[0];
+		$out = trim($out[0]);
+		$pid = explode(" ", $out)[0];
 
 		$this->out("Killing VM with pid ".$pid);
 		exec("sudo kill ".$pid);

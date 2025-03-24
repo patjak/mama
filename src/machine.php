@@ -807,6 +807,9 @@ class Machine {
 			$log_str = Log::$logfile !== FALSE ? " &>> ".Log::$logfile : "";
 
 
+			// Escape sensitive characters
+			$cmd = str_replace("$", "\\$", $cmd);
+
 			passthru($timeout_str." ssh -q -o \"UserKnownHostsFile=/dev/null\" ".
 				"-o \"ConnectTimeout=10\" ".
 				"-o \"StrictHostKeyChecking=no\" root@".$this->get_ip().

@@ -225,7 +225,6 @@ class Machine {
 		$this->load();
 		$this->ip = "";
 		$this->is_started = "";
-		$this->job = "";
 		$this->save();
 		UNLOCK();
 

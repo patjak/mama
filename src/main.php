@@ -776,6 +776,8 @@ function cmd_clear($arg)
 	LOCK();
 	$mach->stop();
 	$mach->clear();
+	$mach->job = "";
+	$mach->save();
 	UNLOCK();
 }
 

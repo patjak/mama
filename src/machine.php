@@ -639,10 +639,13 @@ class Machine {
 		if (!Util::is_root() === true)
 			$this->out("You must be root to start a VM");
 
+		LOCK(); // Protect agains other VMs looking for resources at the same time
+
 		unset($out);
 		exec("ps aux | grep qemu | grep ".$this->mac, $out, $res);
 		if (count($out) > 1) {
 			$this->out("Failed to start VM. Already running.");
+			UNLOCK();
 			return FALSE;
 		}
 
@@ -656,6 +659,7 @@ class Machine {
 
 		if ($tap_id > 10) {
 			$this->out("No available tap interface found");
+			UNLOCK();
 			return FALSE;
 		}
 
@@ -716,6 +720,9 @@ class Machine {
 		$cmd = "sudo screen -d -m qemu-system-".$arch." ".$sys_str." ".$kvm_str." ".$cores_str." ".$net_str." -nographic -serial file:/dev/null ".$this->vm_params;
 		$this->out($cmd);
 		passthru($cmd);
+
+		sleep(3); // Hold the lock so that qemu have a chance to grab it's resources (tap)
+		UNLOCK(); // All resources are grabbed so we can let other VMs start
 
 		$ret = $this->wait_for_status("online", self::$start_timeout);
 		if (!$ret) {

@@ -702,7 +702,7 @@ class Machine {
 			$sys_str .= " -machine virt -cpu cortex-a57 -bios /usr/share/qemu/qemu-uefi-aarch64.bin";
 			$cores_str = "-smp 8";
 			break;
-		case "ppc64":
+		case "ppc64le":
 			$arch = "ppc64";
 			$sys_str .= " -M pseries";
 

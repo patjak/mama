@@ -192,7 +192,7 @@ function cmd_list()
 		out(Util::pad_str($mach->is_vm() ? "Yes" : "", 4), TRUE);
 
 		// Currently running job
-		out(Util::pad_str($mach->job, 32));
+		out($mach->job);
 	}
 }
 
@@ -320,7 +320,7 @@ function cmd_list_os($m = false)
 	$i = 1;
 	foreach ($oses as $os) {
 		out(Util::pad_str($i++." ", 8), TRUE);
-		out(Util::pad_str($os, 32));
+		out($os);
 	}
 }
 

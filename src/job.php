@@ -280,18 +280,21 @@ class Job {
 			// Replace any $RET with the last return code
 			$line = str_replace("\$RET", $SSH_RET, $line);
 
-			if ($context == "DEVICE")
+			if ($context == "DEVICE") {
 				$res = $mach->ssh_cmd($line);
-			else if ($context == "WORKER")
+				$mach_for_log = $mach;
+			} else if ($context == "WORKER") {
 				$res = $worker->ssh_cmd($line);
+				$mach_for_log = $worker;
+			}
 
 			$SSH_RET = $res; // Store the return code for insertion into next command
 
 			if ($res != 0) {
 				if ($res == 124)
-					error("EXECUTION TIMEOUT: ".$line);
+					$mach_for_log->error("EXECUTION TIMEOUT: ".$line);
 				else
-					error("EXECUTION FAILED: ".$line);
+					$mach_for_log->error("EXECUTION FAILED: ".$line);
 				$error = TRUE;
 				break;
 			}

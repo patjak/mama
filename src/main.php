@@ -48,6 +48,9 @@ function parse_args($argv)
 	case "list-kernel":
 		cmd_list_kernel($arg);
 		break;
+	case "list-resources":
+		cmd_list_resources($arg);
+		break;
 	case "job":
 		cmd_job($argv);
 		break;
@@ -332,6 +335,31 @@ function cmd_list_kernel($m)
 
 	out("Listing available kernels for machine: ".$mach->name);
 	list_kernels($mach);
+}
+
+function cmd_list_resources()
+{
+	$machs = Machine::get_all();
+
+	$resources = array();
+
+	foreach ($machs as $mach) {
+		$m_res = explode(" ", $mach->resources);
+		foreach($m_res as $res)
+			if (isset($resources[$res]))
+				$resources[$res] .= " ".$mach->name;
+			else
+				$resources[$res] = $mach->name;
+
+			if ($mach->is_started == 1)
+				$resources[$res] .="*";
+	}
+
+	ksort($resources);
+
+	foreach ($resources as $res => $machs) {
+		out($res.":\t".$machs);
+	}
 }
 
 function cmd_job($args)
@@ -1014,6 +1042,7 @@ list						- list configured machines
 list-os	[machine]				- list available OSes
 list-kernel [machine]				- list available kernels
 list-jobs					- list available jobs
+list-resources					- list all resources and what is using them
 log [machine]					- print log file
 job <job> prepare <arch> <os> [worker]		- Execute prepare part of job for arch and os
   [--args=] - Additional arguments to pass along

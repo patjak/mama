@@ -590,6 +590,7 @@ class Machine {
 		} else if ($this->startcmd != "" && $status == "offline") {
 			$startcmd = $this->startcmd;
 			$startcmd = str_replace("\$OS_ARCH", $this->get_os_arch(), $startcmd);
+			$startcmd = str_replace("\$MAC", $this->mac, $startcmd);
 			out("Start command: ".$startcmd);
 
 			// The command runs in the background so that we can start waiting for the machine

@@ -597,21 +597,31 @@ function cmd_copy_os($args)
 		return;
 	}
 
-	$src_mach = $args[2];
+	$src_mach = Machine::get_by_name($args[2]);
+	if ($src_mach === FALSE)
+		fatal("Couldn't find machine with name ".$args[2]);
+
 	$arch = $args[3];
 	$os = $args[4];
-	$dst_mach = $args[5];
 
-	if ($src_mach == $dst_mach) {
+	$dst_mach = Machine::get_by_name($args[5]);
+	if ($dst_mach === FALSE)
+		fatal("Couldn't find machine with name ".$args[5]);
+
+	if ($src_mach->name == $dst_mach->name) {
 		out("Source and destination machines are the same. Skipping copy.");
 		return;
 	}
 
-	out("Copying os ".$arch."/".$os." from ".$src_mach." to ".$dst_mach);
-	exec($need_sudo." rm -Rf ".MAMA_PATH."/machines/".$dst_mach."/".$arch."/".$os);
-	exec($need_sudo." mkdir -p ".MAMA_PATH."/machines/".$dst_mach."/".$arch."/".$os);
-	exec($need_sudo." cp -r --reflink=auto ".MAMA_PATH."/machines/".$src_mach."/".$arch."/".$os." ".
-	     MAMA_PATH."/machines/".$dst_mach."/".$arch."/");
+	$src_mach->lock();
+	$dst_mach->lock();
+	out("Copying os ".$arch."/".$os." from ".$src_mach->name." to ".$dst_mach->name);
+	exec($need_sudo." rm -Rf ".MAMA_PATH."/machines/".$dst_mach->name."/".$arch."/".$os);
+	exec($need_sudo." mkdir -p ".MAMA_PATH."/machines/".$dst_mach->name."/".$arch."/".$os);
+	exec($need_sudo." cp -r --reflink=auto ".MAMA_PATH."/machines/".$src_mach->name."/".$arch."/".$os." ".
+	     MAMA_PATH."/machines/".$dst_mach->name."/".$arch."/");
+	$dst_mach->unlock();
+	$src_mach->unlock();
 }
 
 function select_os($mach)

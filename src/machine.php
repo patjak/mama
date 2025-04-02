@@ -107,6 +107,17 @@ class Machine {
 		return $machs;
 	}
 
+	public static function get_by_name($name)
+	{
+		$machs = self::get_all();
+		foreach ($machs as $mach) {
+			if ($mach->name == $name)
+				return $mach;
+		}
+
+		return FALSE;
+	}
+
 	public static function find_by_mac($mac)
 	{
 		for ($i = 0; $i < count(Settings::$settings->machine); $i++) {

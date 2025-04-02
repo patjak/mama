@@ -364,6 +364,9 @@ function cmd_list_resources()
 	ksort($resources);
 
 	foreach ($resources as $res => $machs) {
+		if ($res == "")
+			continue;
+
 		out($res.":\t".$machs);
 	}
 }

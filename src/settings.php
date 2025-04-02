@@ -26,7 +26,7 @@ class Settings {
 			if (self::$stream !== FALSE)
 				fatal("Tried to aquire an already aquired lock");
 
-			self::$stream = fopen(SETTINGS_FILE, "r+");
+			self::$stream = fopen(SETTINGS_FILE, "r+e");
 			if (self::$stream === FALSE)
 				fatal("Failed to open mama.xml");
 

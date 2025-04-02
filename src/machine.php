@@ -36,7 +36,7 @@ class Machine {
 
 			$file = MAMA_PATH."/machines/".$this->name."/lock";
 
-			$this->lock_stream = fopen($file, "w");
+			$this->lock_stream = fopen($file, "we");
 			if ($this->lock_stream === FALSE)
 				fatal("Failed to open ".$file);
 

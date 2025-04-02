@@ -4,6 +4,8 @@ class Machine {
 	public $name, $mac, $ip, $is_started, $arch, $os, $kernel, $pwr_dev, $pwr_slot,
 	       $rly_dev, $rly_slot, $reservation, $resources, $boot_params, $vm_params, $only_vm, $job, $startcmd, $stopcmd;
 
+	private $lock = 0, $lock_stream = FALSE;
+
 	// Tunables for how to manage machines
 	public static
 		// How long to wait for a machine to boot before giving up (in seconds)
@@ -24,6 +26,63 @@ class Machine {
 
 		// How long to wait for a resource to become available (in seconds)
 		$resource_wait_timeout = 20 * 60 * 60;
+
+	// Aquire exclusive lock on the machine directory
+	public function lock()
+	{
+		if ($this->lock == 0) {
+			if ($this->lock_stream !== FALSE)
+				fatal("Tried to aquire an already aquired lock");
+
+			$file = MAMA_PATH."/machines/".$this->name."/lock";
+
+			$this->lock_stream = fopen($file, "w");
+			if ($this->lock_stream === FALSE)
+				fatal("Failed to open ".$file);
+
+			if (flock($this->lock_stream, LOCK_EX) === FALSE)
+				fatal("Failed to acquire read lock on ".$file);
+		}
+
+		$this->lock++;
+		if (DEBUG_LOCK)
+			$this->out("Aquiring lock: ".$this->lock);
+
+		return TRUE;
+	}
+
+	// Release exclusive lock on the machine directory
+	public function unlock()
+	{
+		if ($this->lock == 0)
+			fatal($this->name." is not locked");
+
+		$this->lock--;
+		if (DEBUG_LOCK)
+			$this->out("Releasing lock: ".$this->lock);
+
+		if ($this->lock == 0) {
+			fclose($this->lock_stream);
+			$this->lock_stream = FALSE;
+		}
+	}
+
+	public function is_locked()
+	{
+		return ($this->lock != 0);
+	}
+
+	public function sleep_on_lock($seconds)
+	{
+		$this->unlock();
+
+		if ($this->is_locked())
+			fatal("Sleeping while lock is held on ".$this->name);
+
+		sleep($seconds);
+
+		$this->lock();
+	}
 
 	private static function sort_machines($a, $b)
 	{

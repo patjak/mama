@@ -292,14 +292,20 @@ function cmd_new()
 	$m->kernel = "";
 	$m->only_vm = $only_vm;
 
-	Settings::add_machine($m);
-
 	if (!Util::is_root())
 		out("You must be root to run this command");
 
-	shell_exec("sudo mkdir -p ".MAMA_PATH."/machines/".$name);
+	$path = MAMA_PATH."/machines/".$name;
+	passthru("sudo mkdir -p ".$path);
 
+	// Create a file used for machine specific locking
+	passthru("sudo touch ".$path."/lock");
+	passthru("sudo chmod 666 ".$path."/lock");
+
+	LOCK();
+	Settings::add_machine($m);
 	Settings::save();
+	UNLOCK();
 
 	out("New machine created");
 }

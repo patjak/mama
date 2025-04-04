@@ -30,6 +30,11 @@ class Machine {
 	// Aquire exclusive lock on the machine directory
 	public function lock()
 	{
+		if (DEBUG_LOCK) {
+			$str = "PID ".getmypid().": ".$this->name.": Aquiring machine lock: ".($this->lock + 1)."\n";
+			file_put_contents(MAMA_PATH."/mama-lock-debug", $str, FILE_APPEND | LOCK_EX);
+		}
+
 		if ($this->lock == 0) {
 			if ($this->lock_stream !== FALSE)
 				fatal("Tried to aquire an already aquired lock");
@@ -45,8 +50,6 @@ class Machine {
 		}
 
 		$this->lock++;
-		if (DEBUG_LOCK)
-			$this->out("Aquiring lock: ".$this->lock);
 
 		return TRUE;
 	}
@@ -54,12 +57,15 @@ class Machine {
 	// Release exclusive lock on the machine directory
 	public function unlock()
 	{
+		if (DEBUG_LOCK) {
+			$str = "PID ".getmypid().": ".$this->name.": Releasing machine lock: ".$this->lock."\n";
+			file_put_contents(MAMA_PATH."/mama-lock-debug", $str, FILE_APPEND | LOCK_EX);
+		}
+
 		if ($this->lock == 0)
 			fatal($this->name." is not locked");
 
 		$this->lock--;
-		if (DEBUG_LOCK)
-			$this->out("Releasing lock: ".$this->lock);
 
 		if ($this->lock == 0) {
 			fclose($this->lock_stream);
@@ -863,7 +869,7 @@ class Machine {
 		LOCK();
 		$this->load();
 		if ($this->is_started || $this->job != "")
-			$this->out("Waiting for machine to become idle");
+			$this->out("Waiting for machine to become idle ( started: ".($this->is_started ? "yes " : "no ").($this->job != "" ? "job: ".$this->job : "")." )");
 
 		while ($this->is_started || $this->job != "") {
 			SLEEP_ON_LOCK(10);

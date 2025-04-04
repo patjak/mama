@@ -22,6 +22,11 @@ class Settings {
 	// Aquire exclusive lock on the settings file
 	public static function lock()
 	{
+		if (DEBUG_LOCK) {
+			$str = "PID ".getmypid().": Aquiring lock: ".(self::$lock + 1)."\n";
+			file_put_contents(MAMA_PATH."/mama-lock-debug", $str, FILE_APPEND | LOCK_EX);
+		}
+
 		if (self::$lock == 0) {
 			if (self::$stream !== FALSE)
 				fatal("Tried to aquire an already aquired lock");
@@ -35,21 +40,21 @@ class Settings {
 		}
 
 		self::$lock++;
-		if (DEBUG_LOCK)
-			out("Aquiring lock: ".self::$lock);
-
 		return TRUE;
 	}
 
 	// Release exclusive lock on the settings file
 	public static function unlock()
 	{
+		if (DEBUG_LOCK) {
+			$str = "PID ".getmypid().": Releasing lock: ".self::$lock."\n";
+			file_put_contents(MAMA_PATH."/mama-lock-debug", $str, FILE_APPEND | LOCK_EX);
+		}
+
 		if (self::$lock == 0)
 			fatal("mama.xml is not locked");
 
 		self::$lock--;
-		if (DEBUG_LOCK)
-			out("Releasing lock: ".self::$lock);
 
 		if (self::$lock == 0) {
 			fclose(self::$stream);

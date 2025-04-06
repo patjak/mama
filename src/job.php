@@ -19,6 +19,11 @@ class Job {
 
 			$j1 = explode(" ", $m->job);
 			$j2 = explode(" ", $job);
+
+			// Check format of job description
+			if (count($j1) != 3 || count($j2) != 3)
+				continue;
+
 			$match = $j1[1] == $j2[1] && $j1[2] == $j2[2];
 
 			if (!$match)

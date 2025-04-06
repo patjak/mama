@@ -673,13 +673,14 @@ class Machine {
 			$startcmd = $this->startcmd;
 			$startcmd = str_replace("\$OS_ARCH", $this->get_os_arch(), $startcmd);
 			$startcmd = str_replace("\$MAC", $this->mac, $startcmd);
-			out("Start command: ".$startcmd);
+			$this->out("Start command: ".$startcmd);
 
 			// The command runs in the background so that we can start waiting for the machine
 			passthru($startcmd." > /dev/null &");
 		}
 
 		$ret = $this->wait_for_status("online", self::$start_timeout);
+
 		if ($this->get_status() == "offline")
 			$this->stop();
 
@@ -853,15 +854,16 @@ class Machine {
 				$this->kill_vm();
 		}
 
-
 		// Always power off the machine
 		if ($this->stopcmd == "") {
 			if ($this->is_only_vm())
 				$this->kill_vm();
 			else
 				$this->set("power", 0);
-		} else {
-			out($this->stopcmd);
+		}
+
+		if ($this->stopcmd != "") {
+			$this->out("Stop command: ".$this->stopcmd);
 			passthru($this->stopcmd." > /dev/null &");
 		}
 

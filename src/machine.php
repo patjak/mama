@@ -601,12 +601,7 @@ class Machine {
 				out("", FALSE, FALSE);
 			}
 
-			UNLOCK();
-			if (IS_LOCKED())
-				fatal("Waiting for resources with lock held!");
-
-			sleep(10);
-			LOCK();
+			SLEEP_ON_LOCK(10);
 
 			$timeout -= 10;
 			if ($timeout <= 0) {

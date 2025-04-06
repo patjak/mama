@@ -307,6 +307,17 @@ class Machine {
 		$this->out("cleared machine state");
 	}
 
+	public function clear_job()
+	{
+		LOCK();
+		$this->load();
+		$this->job = "";
+		$this->save();
+		UNLOCK();
+
+		$this->out("cleared job");
+	}
+
 	public function print_info()
 	{
 		Log::pause();

@@ -820,12 +820,9 @@ function cmd_clear($arg)
 	if ($mach === false)
 		return;
 
-	LOCK();
 	$mach->stop();
 	$mach->clear();
-	$mach->job = "";
-	$mach->save();
-	UNLOCK();
+	$mach->clear_job();
 }
 
 function cmd_connect($arg)

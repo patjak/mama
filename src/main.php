@@ -302,10 +302,7 @@ function cmd_new()
 	passthru("sudo touch ".$path."/lock");
 	passthru("sudo chmod 666 ".$path."/lock");
 
-	LOCK();
 	Settings::add_machine($m);
-	Settings::save();
-	UNLOCK();
 
 	out("New machine created");
 }
@@ -970,14 +967,11 @@ function cmd_set($argv)
 	else
 		$arg_mach = false;
 
-	LOCK();
 	$mach = select_machine($arg_mach);
 
 	/* Machine not found */
-	if ($mach === false) {
-		UNLOCK();
+	if ($mach === false)
 		return;
-	}
 
 	if (!isset($argv[3]))
 		$attr = Util::get_line("{power | relay | os | kernel | resources | params }: ");
@@ -1011,7 +1005,6 @@ function cmd_set($argv)
 	}
 
 	$mach->set($attr, $val);
-	UNLOCK();
 }
 
 function cmd_get($argv)
@@ -1021,14 +1014,11 @@ function cmd_get($argv)
 	else
 		$arg_mach = false;
 
-	LOCK();
 	$mach = select_machine($arg_mach);
 
 	/* Machine not found */
-	if ($mach === false) {
-		UNLOCK();
+	if ($mach === false)
 		return;
-	}
 
 	if (!isset($argv[3]))
 		$attr = Util::get_line("{power | relay | os | params | resources | kernel | reservation | ip | mac}: ");
@@ -1036,7 +1026,6 @@ function cmd_get($argv)
 		$attr = $argv[3];
 
 	out($mach->get($attr));
-	UNLOCK();
 
 }
 

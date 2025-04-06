@@ -910,6 +910,15 @@ class Machine {
 		}
 	}
 
+	function reserve($user)
+	{
+		LOCK();
+		$this->load();
+		$this->reservation = $user;
+		$this->save();
+		UNLOCK();
+	}
+
 	// Returns an array of kernels available for the currently selected OS on the machine
 	function get_kernels()
 	{

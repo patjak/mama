@@ -837,7 +837,6 @@ function cmd_connect($arg)
 
 function cmd_reserve($arg)
 {
-	LOCK();
 	$mach = select_machine($arg);
 	if ($mach === false)
 		return;
@@ -846,19 +845,14 @@ function cmd_reserve($arg)
 		fatal("Machine is already reserved by: ".$mach->reservation);
 
 	$user = trim(shell_exec("whoami"));
-	$mach->reservation = $user;
-	$mach->save();
-	UNLOCK();
+	$mach->reserve($user);
 }
 
 function cmd_release($arg)
 {
-	LOCK();
 	$mach = select_machine($arg);
-	if ($mach === false) {
-		UNLOCK();
+	if ($mach === false)
 		return;
-	}
 
 	if ($mach->reservation == "")
 		fatal("Machine is not reserved");
@@ -868,23 +862,18 @@ function cmd_release($arg)
 		fatal("Failed to release machine. You do not hold the reservation. ".
 		      "Use the command release-forced to force release the machine.");
 	}
-	$mach->reservation = "";
-	$mach->save();
-	UNLOCK();
+
+	$mach->reserve("");
 }
 
 function cmd_release_forced($arg)
 {
-	UNLOCK();
 	$mach = select_machine($arg);
 	if ($mach === false) {
-		UNLOCK();
 		return;
 	}
 
-	$mach->reservation = "";
-	$mach->save();
-	UNLOCK();
+	$mach->reserve = "";
 }
 
 function cmd_wait($arg)

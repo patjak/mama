@@ -140,10 +140,10 @@ class Job {
 			return FALSE;
 		}
 
-		if ($mach->is_started && $mach->job != "")
+		if ($mach->is_started() && $mach->job != "")
 			$mach->out("Waiting for job to finish: ".$mach->job);
 
-		while ($mach->is_started && $mach->job != "") {
+		while ($mach->is_started() && $mach->job != "") {
 			SLEEP_ON_LOCK(10);
 			$mach->load();
 		}

@@ -145,7 +145,7 @@ class Machine {
 		$ip = FALSE;
 
 		// We never return an ip for stopped machine
-		if ($this->is_started != 1)
+		if (!$this->is_started())
 			return FALSE;
 
 		exec("ip -4 neighbor | grep \"".$this->mac."\"", $res, $code);
@@ -326,7 +326,7 @@ class Machine {
 		out("Name:\t\t".$this->name);
 		out("MAC:\t\t".$this->mac);
 		out("IP:\t\t".$ip);
-		out("Is started:\t".($this->is_started == 1 ? "yes" : "no"));
+		out("Is started:\t".($this->is_started() ? "yes" : "no"));
 		out("Is only VM:\t".($this->only_vm == 1 ? "yes" : "no"));
 		out("OS:\t\t".$this->os);
 		out("Kernel:\t\t".($this->kernel == "" ? "default" : $this->kernel));
@@ -581,7 +581,7 @@ class Machine {
 		$machs = self::get_all();
 		$res_wait = array(); // Used for printing the resouces we're waiting for to user
 		foreach ($machs as $mach) {
-			if ($mach->is_started != 1)
+			if (!$mach->is_started())
 				continue;
 
 			foreach ($resources as $res) {
@@ -872,14 +872,15 @@ class Machine {
 		return TRUE;
 	}
 
+	// Wait for machine to be stopped and have no queued jobs
 	public function wait()
 	{
 		LOCK();
 		$this->load();
-		if ($this->is_started || $this->job != "")
-			$this->out("Waiting for machine to become idle ( started: ".($this->is_started ? "yes " : "no ").($this->job != "" ? "job: ".$this->job : "")." )");
+		if ($this->is_started() || $this->job != "")
+			$this->out("Waiting for machine to become idle ( started: ".($this->is_started() ? "yes " : "no ").($this->job != "" ? "job: ".$this->job : "")." )");
 
-		while ($this->is_started || $this->job != "") {
+		while ($this->is_started() || $this->job != "") {
 			SLEEP_ON_LOCK(10);
 			$this->load();
 		}

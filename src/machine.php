@@ -335,7 +335,7 @@ class Machine {
 		if ($this->rly_dev != "")
 			out("Relay device:\t".$this->rly_dev.",".$this->rly_slot);
 		out("Reserved by:\t".$this->reservation);
-		out("Resources:\t".$this->resources);
+		out("Resources:\t".$this->resources." (nested: ".Machine::get_nested_resources($this->name).")");
 		if ($this->startcmd != "")
 			out("Start command:\t".$this->startcmd);
 		if ($this->stopcmd != "")
@@ -567,6 +567,33 @@ class Machine {
 		return TRUE;
 	}
 
+	// Get all resources for machine with name and if one resource
+	// is another machine then get it's resources as well.
+	public static function get_nested_resources($mach_name)
+	{
+		$mach = Machine::get_by_name($mach_name);
+		if ($mach === FALSE)
+			return "";
+
+		$str = "";
+		$resources = explode(" ", $mach->resources);
+		foreach ($resources as $resource) {
+			$resource = trim($resource);
+			if ($resource == "")
+				continue;
+			if ($str != "")
+				$str .= " ";
+
+			$str .= $resource;
+
+			$nested = Machine::get_nested_resources($resource);
+			if ($nested != "")
+				$str .= " ".$nested;
+		}
+
+		return $str;
+	}
+
 	public function wait_for_resources($timeout = FALSE)
 	{
 		if ($timeout === FALSE)
@@ -575,7 +602,8 @@ class Machine {
 		if (trim($this->resources) == "")
 			return TRUE;
 
-		$resources = explode(" ", $this->resources);
+		$resources = Machine::get_nested_resources($this->name);
+		$resources = explode(" ", $resources);
 
 		$sleep = FALSE;
 		$machs = self::get_all();
@@ -597,7 +625,7 @@ class Machine {
 			if ($timeout == self::$resource_wait_timeout) {
 				$this->out("Waiting for resources: ", TRUE);
 				foreach ($res_wait as $res)
-					out($res, TRUE, FALSE);
+					out($res." ", TRUE, FALSE);
 				out("", FALSE, FALSE);
 			}
 

@@ -83,27 +83,24 @@ class Job {
 
 		LOCK();
 
+		$job_str = "prepare ".$this->name." ".$arch."/".$os;
+
+		// Wait for all machines running this job to finish
+		$this->wait_for_active_job($job_str);
+
 		// Wait for the worker to finish any running jobs
 		$worker_mach = select_machine($worker);
 		if ($worker_mach->is_started && $worker_mach->job != "")
 			$worker_mach->out("Waiting for job to finish: ".$worker_mach->job);
 
 		while ($worker_mach->is_started && $worker_mach->job != "") {
-			SLEEP_ON_LOCK(10);
+			UNLOCK();
+			sleep(10);
+			LOCK();
 			$worker_mach->load();
 		}
 
-		// Put something in the job field so the machine is not taken by another job
-		// while we wait for active jobs to finish
 		$prev_job = $worker_mach->job; // Save old job name in case of nested jobs
-		$worker_mach->is_started = 1;
-		$worker_mach->job = "RESERVED";
-		$worker_mach->save();
-
-		// Wait for all machines running this job to finish
-		$job_str = "prepare ".$this->name." ".$arch."/".$os;
-		$this->wait_for_active_job($job_str);
-
 		$worker_mach->job = $job_str;
 		$worker_mach->save();
 
@@ -115,9 +112,11 @@ class Job {
 		$worker_mach->stop();
 
 		LOCK();
+
 		$worker_mach->load();
 		$worker_mach->job = $prev_job;
 		$worker_mach->save();
+
 		UNLOCK();
 
 		if ($ret == FALSE)

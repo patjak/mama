@@ -845,9 +845,17 @@ class Machine {
 		return $ret;
 	}
 
-	public function stop()
+	public function stop($force = FALSE)
 	{
 		$this->out("Stopping machine");
+
+		LOCK();
+		$this->load();
+		if (!$this->is_started() && $force != TRUE) {
+			UNLOCK();
+			return TRUE;
+		}
+		UNLOCK();
 
 		$status = $this->get_status();
 

@@ -710,7 +710,7 @@ class Machine {
 
 		$ret = $this->wait_for_status("online", self::$start_timeout);
 
-		if ($this->get_status() == "offline")
+		if ($this->get_status() != "online")
 			$this->stop();
 
 		return $ret;

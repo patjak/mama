@@ -613,6 +613,9 @@ class Machine {
 			if (!$mach->is_started())
 				continue;
 
+			if ($mach->name == $this->name)
+				continue;
+
 			foreach ($resources as $res) {
 				$mach_res = explode(" ", $mach->resources);
 				if (in_array($res, $mach_res)) {

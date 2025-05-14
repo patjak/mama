@@ -481,10 +481,12 @@ function cmd_run_os_build_script($args)
 
 	$need_sudo = Util::is_root() ? "" : "sudo";
 
-	passthru($need_sudo." rm -Rf /tmp/mama-kiwi");
+	$tmp_dir = "/dev/shm/mama-kiwi";
+
+	passthru($need_sudo." rm -Rf ".$tmp_dir);
 
 	unset($code);
-	passthru($need_sudo." kiwi-ng --type=kis --debug system build --description ".$desc." --target-dir /tmp/mama-kiwi ".$packages_str, $code);
+	passthru($need_sudo." kiwi-ng --type=kis --debug system build --description ".$desc." --target-dir ".$tmp_dir." ".$packages_str, $code);
 	if ($code != 0)
 		fatal("Failed to build os with kiwi");
 
@@ -496,7 +498,7 @@ function cmd_run_os_build_script($args)
 	passthru($need_sudo." mkdir -p ".$target);
 
 	unset($code);
-	passthru($need_sudo." mv /tmp/mama-kiwi/* ".$target, $code);
+	passthru($need_sudo." mv ".$tmp_dir."/* ".$target, $code);
 	if ($code != 0)
 		fatal("Failed to store new os build");
 

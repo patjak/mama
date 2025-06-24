@@ -88,7 +88,6 @@ class Log {
 		}
 
 		self::$logfile = MAMA_PATH."/log/".$filename;
-		self::print_msg("--- Start of new log ---\n", LOG_LVL_LOG);
 	}
 }
 

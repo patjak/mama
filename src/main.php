@@ -663,6 +663,8 @@ function list_kernels($mach)
 		out(Util::pad_str($kernel, 48), TRUE);
 		out(Util::pad_str($date, 20));
 	}
+	out(Util::pad_str($i++." ", 8), TRUE);
+	out(Util::pad_str("Latest", 48));
 }
 
 function select_kernel($mach)
@@ -672,14 +674,24 @@ function select_kernel($mach)
 	$kernels = $mach->get_kernels();
 	$names = array();
 
+	$latest = "";
+	$latest_date = "";
 	foreach ($kernels as $name => $date) {
+		if ($date >= $latest_date) {
+			$latest_date = $date;
+			$latest = $name;
+		}
 		$names[] = $name;
 	}
+	$names[] = "Latest";
 
 	$kernel = Util::ask_from_array($names, "Kernel:");
 
 	if ($kernel == "default")
 		$kernel = "";
+
+	if (strtolower($kernel) == "Latest")
+		$kernel = $latest;
 
 	return $kernel;
 }

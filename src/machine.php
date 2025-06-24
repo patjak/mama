@@ -400,6 +400,17 @@ class Machine {
 		case "kernel":
 			$kernels = $this->get_kernels();
 
+			if (strtolower($val) == "latest") {
+				$val = "";
+				$latest_date = "";
+				foreach ($kernels as $name => $date) {
+					if ($date >= $latest_date) {
+						$latest_date = $date;
+						$val = $name;
+					}
+				}
+			}
+
 			if (strtolower($val) == "default")
 				$val = "";
 

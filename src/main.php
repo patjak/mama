@@ -1057,6 +1057,9 @@ job <job> prepare <arch> <os> [worker]		- Execute prepare part of job for arch a
   [--no-ssh-timeout] - Allows ssh commands to run indefinitely
 
 job <job> run <machine>	<arch> <os>		- Execute job on specified machine
+  [--args=] - Additional arguments to pass along
+  [--no-ssh-timeout] - Allows ssh commands to run indefinitely
+
 build-os <arch> <os> [worker]			- build a deployable os locally or on specified machine
   [--packages=...] - Additional packages to install
 

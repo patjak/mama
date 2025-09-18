@@ -861,15 +861,16 @@ class Machine {
 
 	public function stop($force = FALSE)
 	{
-		$this->out("Stopping machine");
-
 		LOCK();
 		$this->load();
 		if (!$this->is_started() && $force != TRUE) {
 			UNLOCK();
+			$this->out("Machine is not started. Ignoring stop.");
 			return TRUE;
 		}
 		UNLOCK();
+
+		$this->out("Stopping machine");
 
 		$status = $this->get_status();
 
@@ -893,7 +894,6 @@ class Machine {
 			} else {
 				$this->out("No control device available to turn off the machine");
 				$this->clear();
-
 				return FALSE;
 			}
 		}

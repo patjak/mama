@@ -826,6 +826,13 @@ function cmd_stop($arg)
 
 function cmd_clear($arg)
 {
+	if ($arg == "all") {
+		foreach (Machine::get_all() as $m) {
+			cmd_clear($m->name);
+		}
+		return;
+	}
+
 	$mach = select_machine($arg);
 
 	if ($mach === false)
@@ -1073,7 +1080,7 @@ clear-log [machine]				- clear the log for machine
 start [machine]					- boot machine
 start-vm [machine]				- boot virtual instance of machine
 stop [machine]					- triggers power button
-clear [machine]					- stop machine and clear stale data (ip, job, etc)
+clear [machine | all]				- stop machine and clear stale data (ip, job, etc)
 connect [machine]				- connect to machine with ssh
 set <machine>	power <value>			- control wall power
 		relay <seconds>			- connect the relay for x seconds

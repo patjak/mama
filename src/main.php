@@ -386,8 +386,15 @@ function cmd_job($args)
 
 		$worker = isset($args[6]) ? $args[6] : "jobs";
 
+		$arch = $args[4];
+		$os = $args[5];
+		$worker = $args[6];
 		$job = new Job($args[2]);
-		$job->execute_prepare_job($args[4], $args[5], $worker);
+		$job->type = "prepare";
+		$job->arch = $arch;
+		$job->os = $os;
+		$job->mach = $worker;
+		$job->execute_prepare_job();
 		break;
 
 	case "run":
@@ -396,8 +403,15 @@ function cmd_job($args)
 			return;
 		}
 
+		$arch = $args[4];
+		$os = $args[5];
+
 		$job = new Job($args[2]);
-		$job->execute_run_job($args[4], $args[5], $args[6]);
+		$job->type = "run";
+		$job->mach = $args[4];
+		$job->arch = $args[5];
+		$job->os = $args[6];
+		$job->execute_run_job();
 		break;
 
 	default:

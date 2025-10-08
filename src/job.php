@@ -1,7 +1,7 @@
 <?php
 
 class Job {
-	public $name;
+	public $name, $type, $arch, $os, $mach;
 
 	function __construct($name)
 	{
@@ -75,8 +75,12 @@ class Job {
 		return $job;
 	}
 
-	public function execute_prepare_job($arch, $os, $worker)
+	public function execute_prepare_job()
 	{
+		$arch = $this->arch;
+		$os = $this->os;
+		$worker = $this->mach;
+
 		$job = file_get_contents(MAMA_PATH."/jobs/".$this->name."/prepare.job");
 		if ($job === FALSE)
 			fatal("Prepare job not found");
@@ -120,12 +124,15 @@ class Job {
 		UNLOCK();
 
 		if ($ret == FALSE)
-			fatal("Prepare job FAILED");
+			$this->fatal("Prepare job FAILED");
 		return $ret;
 	}
 
-	public function execute_run_job($mach, $arch, $os)
+	public function execute_run_job()
 	{
+		$mach = $this->mach;
+		$arch = $this->arch;
+		$os = $this->os;
 		$job = file_get_contents(MAMA_PATH."/jobs/".$this->name."/run.job");
 		if ($job === FALSE)
 			return FALSE;

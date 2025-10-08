@@ -41,10 +41,10 @@ class Job {
 	private function wait_for_active_job($job, $mach = FALSE)
 	{
 		if (!IS_LOCKED())
-			fatal("Lock must be held in wait_for_active_job()");
+			$this->fatal("Lock must be held in wait_for_active_job()");
 
 		if ($this->is_active_job($job, $mach))
-			out("Waiting for running job: ".$job);
+			$this->out("Waiting for running job: ".$job);
 
 		while ($this->is_active_job($job, $mach))
 			SLEEP_ON_LOCK(10);
@@ -83,7 +83,7 @@ class Job {
 
 		$job = file_get_contents(MAMA_PATH."/jobs/".$this->name."/prepare.job");
 		if ($job === FALSE)
-			fatal("Prepare job not found");
+			$this->fatal("Prepare job not found");
 
 		LOCK();
 
@@ -95,7 +95,7 @@ class Job {
 		// Wait for the worker to finish any running jobs
 		$worker_mach = select_machine($worker);
 		if ($worker_mach->is_started && $worker_mach->job != "")
-			$worker_mach->out("Waiting for job to finish: ".$worker_mach->job);
+			$this->out("Waiting for job to finish: ".$worker_mach->job);
 
 		while ($worker_mach->is_started && $worker_mach->job != "") {
 			UNLOCK();
@@ -141,13 +141,13 @@ class Job {
 		$mach = select_machine($mach);
 
 		if ($mach === FALSE) {
-			error("Failed to find machine");
+			$this->error("Failed to find machine");
 			UNLOCK();
 			return FALSE;
 		}
 
 		if ($mach->is_started() && $mach->job != "")
-			$mach->out("Waiting for job to finish: ".$mach->job);
+			$this->out("Waiting for job to finish: ".$mach->job);
 
 		while ($mach->is_started() && $mach->job != "") {
 			SLEEP_ON_LOCK(10);
@@ -211,7 +211,7 @@ class Job {
 				else if ($line == "WORKER")
 					$context = "WORKER";
 
-				out("Switching to context: ".$context." ".($context == "VM" ? $vm_mach->name : ""));
+				$this->out("Switching to context: ".$context." ".($context == "VM" ? $vm_mach->name : ""));
 
 				// When switching between WORKERs and DEVICEs we must also start and stop the machines
 				if ($old_context != $context) {
@@ -277,13 +277,13 @@ class Job {
 				continue;
 
 			if ($context == "MAMA") {
-				out("(mama) ".$line);
+				$this->out("(mama) ".$line);
 				$res = NULL;
 				$log_str = Log::$logfile !== FALSE ? " &>> ".Log::$logfile : "";
 				passthru($line." ".$log_str, $res);
 
 				if ($res != 0) {
-					error("EXECUTION FAILED: ".$line);
+					$this->error("EXECUTION FAILED: ".$line);
 					$error = TRUE;
 					break;
 				}
@@ -312,7 +312,7 @@ class Job {
 			}
 		}
 
-		out("Execution finished. Turning off machines");
+		$this->out("Execution finished. Turning off machines");
 
 		if ($mach !== FALSE)
 			$mach->stop();
@@ -320,6 +320,33 @@ class Job {
 			$worker->stop();
 
 		return ($error === FALSE);
+	}
+
+	function out($msg, $no_eol = FALSE, $timestamp = TRUE)
+	{
+		$mach = select_machine($this->mach);
+		if ($mach === FALSE)
+			out($msg, $no_eol, $timestamp);
+		else
+			$mach->out($msg, $no_eol, $timestamp);
+	}
+
+	function error($msg, $no_eol = FALSE, $timestamp = TRUE)
+	{
+		$mach = select_machine($this->mach);
+		if ($mach === FALSE)
+			error($msg, $no_eol, $timestamp);
+		else
+			$mach->error($msg, $no_eol, $timestamp);
+	}
+
+	function fatal($msg, $errno = 1)
+	{
+		$mach = select_machine($this->mach);
+		if ($mach === FALSE)
+			fatal($msg, $errno);
+		else
+			$mach->fatal($msg, $errno);
 	}
 }
 

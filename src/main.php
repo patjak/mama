@@ -965,7 +965,7 @@ function bootinfo(&$kernel, &$initrd, &$append, $mac, $server_ip)
 // Generate the ipxe commands needed to boot a machine
 function cmd_ipxe($argv)
 {
-	out("#!ipxe");
+	echo "#!ipxe\n";
 
 	if (!isset($argv[2]))
 		fatal("No MAC specified");
@@ -982,9 +982,9 @@ function cmd_ipxe($argv)
 
 	bootinfo($kernel, $initrd, $append, $mac, $server_ip);
 
-	out("initrd ".$initrd." ||");
-	out("kernel ".$kernel." ".$append." ||");
-	out("boot || shell");
+	echo "initrd ".$initrd." ||\n";
+	echo "kernel ".$kernel." ".$append." ||\n";
+	echo "boot || shell\n";
 }
 
 function cmd_bootinfo($argv)

@@ -835,6 +835,7 @@ class Machine {
 			break;
 		default:
 			$arch = "x86_64";
+			$sys_str .= " -cpu host";
 		}
 
 		$net_str .= " -kernel ".$kernel." -initrd ".$initrd." -append \"".$this->boot_params." ip=dhcp rd.neednet=1 systemd.hostname=".$this->name." root=nfs:".MAMA_HOST.":".MAMA_PATH."/machines/".$this->name."/".$this->os.",rw console=ttyS0 console=tty\"";

@@ -947,7 +947,7 @@ class Machine {
 
 		// Sometimes we don't get the correct status immediately so wait a little bit for it
 		if ($this->wait_for_status("online", 30, TRUE)) {
-			out("(".$this->name.") ssh: ".$cmd);
+			$this->out("ssh: ".$cmd);
 			$log_str = Log::$logfile !== FALSE ? " &>> ".Log::$logfile : "";
 
 
@@ -961,7 +961,7 @@ class Machine {
 
 			return $res;
 		} else {
-			out("Unable to execute ssh cmd since machine is not online.");
+			$this->out("Unable to execute ssh cmd since machine is not online.");
 			return FALSE;
 		}
 	}
@@ -1015,17 +1015,30 @@ class Machine {
 
 	function out($msg, $no_eol = FALSE, $timestamp = TRUE)
 	{
-		out("(".$this->name.") ".$msg, $no_eol, $timestamp);
+		$str = $this->name;
+		if ($this->job != "")
+			$str = $this->name.": ".$this->job;
+
+		$str = Util::string_to_color("(".$str.")", 5);
+		out($str." ".$msg, $no_eol, $timestamp);
 	}
 
 	function error($msg, $no_eol = FALSE, $timestamp = TRUE)
 	{
-		error("(".$this->name.") ".$msg, $no_eol, $timestamp);
+		$str = $this->name;
+		if ($this->job != "")
+			$str = $this->name.": ".$this->job;
+
+		error("(".$str.") ".$msg, $no_eol, $timestamp);
 	}
 
 	function fatal($msg, $errno = 1)
 	{
-		fatal("(".$this->name.") ".$msg, $errno);
+		$str = $this->name;
+		if ($this->job != "")
+			$str = $this->name.": ".$this->job;
+
+		fatal("(".$str.") ".$msg, $errno);
 	}
 }
 

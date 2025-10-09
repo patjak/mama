@@ -93,10 +93,18 @@ class Log {
 
 function out($msg, $no_eol = FALSE, $timestamp = TRUE)
 {
+	static $last_no_eol = FALSE;
+
 	if ($no_eol == FALSE)
 		$msg .= "\n";
 
+	// Only add PID if we're starting a new line
+	if (DEBUG_PID === TRUE && !$last_no_eol)
+		$msg = Util::string_to_rand_color(getmypid())."\t".$msg;
+
 	Log::print_msg($msg, LOG_LVL_DEFAULT, $timestamp);
+
+	$last_no_eol = $no_eol;
 
 	return strlen($msg);
 }

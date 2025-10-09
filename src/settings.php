@@ -23,7 +23,8 @@ class Settings {
 	public static function lock()
 	{
 		if (DEBUG_LOCK) {
-			$str = "PID ".getmypid().": Aquiring lock: ".(self::$lock + 1)."\n";
+			$pid = Util::string_to_rand_color(getmypid());
+			$str = $pid.": Aquiring lock: ".(self::$lock + 1)."\n";
 			file_put_contents(MAMA_PATH."/mama-lock-debug", $str, FILE_APPEND | LOCK_EX);
 		}
 

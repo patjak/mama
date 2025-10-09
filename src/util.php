@@ -122,6 +122,23 @@ class Util {
 		else
 			return "";
 	}
+
+	// Here are some colors what work on my terminal
+	static $colors = array(31, 32, 33, 34, 35, 36, 37, 90, 91, 92, 93, 94, 95, 96);
+
+	// Returns a string in a pseudo random color
+	public static function string_to_rand_color($str) {
+		srand($str);
+		$color = self::$colors[rand(0, count(self::$colors) - 1)];
+		return "\e[".$color."m".$str."\e[0m";
+	}
+
+	public static function string_to_color($str, $color) {
+		$color = $color % (count(self::$colors) - 1);
+		$color = self::$colors[$color];
+
+		return "\e[".$color."m".$str."\e[0m";
+	}
 };
 
 ?>

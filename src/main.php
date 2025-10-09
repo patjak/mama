@@ -3,6 +3,7 @@
 $opts = array(	"args:",
 		"debug",
 		"debug-lock",
+		"debug-pid",
 		"packages:",
 		"no-ssh-timeout");
 
@@ -17,6 +18,11 @@ if (isset(Options::$options["debug-lock"]))
 	define("DEBUG_LOCK", TRUE);
 else
 	define("DEBUG_LOCK", FALSE);
+
+if (isset(Options::$options["debug-pid"]))
+	define("DEBUG_PID", TRUE);
+else
+	define("DEBUG_PID", FALSE);
 
 if ($argc > 1) {
 	if (Settings::load() === false)

@@ -5,7 +5,14 @@ define("MAMA_PATH", "/usr/share/mama");
 require_once(MAMA_PATH."/src/machine.php");
 
 // Here you can overwrite the default delays and timeouts
+// All timeouts are in seconds
+
+// Machine::$start_timeout = 4 * 60;
 // Machine::$stop_timeout = 30;
+// Machine::$ssh_cmd_timeout = 1 * 60;
+// Machine::$rly_force_off_delay = 8;
+// Machine::$power_cycle_delay = 30;
+// Machine::$resource_wait_timeout = 20 * 60 * 60;
 
 // Include code for your power and relay controls here
 require_once(MAMA_PATH."/src/mpower.php");

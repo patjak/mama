@@ -501,7 +501,7 @@ function cmd_run_os_build_script($args)
 
 	$need_sudo = Util::is_root() ? "" : "sudo";
 
-	$tmp_dir = "/dev/shm/mama-kiwi";
+	$tmp_dir = "/dev/shm/mama-kiwi-".$arch."-".$os;
 
 	passthru($need_sudo." rm -Rf ".$tmp_dir);
 
@@ -521,6 +521,11 @@ function cmd_run_os_build_script($args)
 	passthru($need_sudo." mv ".$tmp_dir."/* ".$target, $code);
 	if ($code != 0)
 		fatal("Failed to store new os build");
+
+	unset($code);
+	passthru($need_sudo." rmdir ".$tmp_dir, $code);
+	if ($code != 0 )
+		fatal("Failed to remove ".$tmp_dir);
 
 	unset($code);
 	passthru($need_sudo." cp ".$target."/*.initrd ".$target."/build/image-root/boot/initrd-mama", $code);

@@ -900,13 +900,15 @@ class Machine {
 		if (!$this->wait_for_status("offline", self::$stop_timeout)) {
 			if ($this->rly_dev != "")
 				$this->set("relay", self::$rly_force_off_delay);
-			if ($this->is_vm())
+			if ($this->is_vm()) {
+				$this->out("Killing VM");
 				$this->kill_vm();
+			}
 		}
 
 		// Always power off the machine
 		if ($this->stopcmd == "") {
-			if ($this->is_only_vm())
+			if ($this->is_vm())
 				$this->kill_vm();
 			else
 				$this->set("power", 0);

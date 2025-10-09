@@ -826,8 +826,7 @@ class Machine {
 			break;
 		case "aarch64":
 			$arch = "aarch64";
-			$sys_str .= " -machine virt -cpu cortex-a57 -bios /usr/share/qemu/qemu-uefi-aarch64.bin";
-			$cores_str = "-smp 8";
+			$sys_str .= " -machine virt -cpu max -bios /usr/share/qemu/qemu-uefi-aarch64.bin";
 			break;
 		case "ppc64le":
 			$arch = "ppc64";

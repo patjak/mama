@@ -863,8 +863,7 @@ function cmd_clear($arg)
 	if ($mach === false)
 		return;
 
-	$mach->stop();
-	$mach->clear();
+	$mach->stop(TRUE);
 	$mach->clear_job();
 }
 

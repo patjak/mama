@@ -68,6 +68,7 @@
     </packages>
     <packages type="bootstrap">
         <package name="udev"/>
+        <package name="diffutils"/>
         <package name="filesystem"/>
         <package name="gawk"/>
         <package name="grep"/>

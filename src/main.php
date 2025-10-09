@@ -946,7 +946,11 @@ function bootinfo(&$kernel, &$initrd, &$append, $mac, $server_ip)
 		$kernel_filename = "kernel-mama";
 		$initrd_filename = "initrd-mama";
 	} else {
-		$kernel_filename = "vmlinuz-".$mach->kernel;
+		$arch = explode("/", $mach->os)[0];
+		if ($arch == "aarch64")
+			$kernel_filename = "Image-".$mach->kernel;
+		else
+			$kernel_filename = "vmlinuz-".$mach->kernel;
 		$initrd_filename = "initrd-".$mach->kernel;
 	}
 

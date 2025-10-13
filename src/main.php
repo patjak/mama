@@ -391,10 +391,8 @@ function cmd_job($args)
 		}
 
 		$worker = isset($args[6]) ? $args[6] : "jobs";
-
 		$arch = $args[4];
 		$os = $args[5];
-		$worker = $args[6];
 		$job = new Job($args[2]);
 		$job->type = "prepare";
 		$job->arch = $arch;

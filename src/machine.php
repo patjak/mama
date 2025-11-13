@@ -207,7 +207,7 @@ class Machine {
 			return "closed";
 
 		// Check if SSH port is open
-		exec("nc -w 5 -z ".$ip." 22", $tmp, $ret);
+		exec("nc -w 5 -z ".$ip." 22 2> /dev/null ;", $tmp, $ret);
 		if ($ret == 0)
 			return "open";
 

@@ -1,0 +1,21 @@
+# Mama configuration and runtime files
+mama.xml
+mama-lock-debug
+
+# Logs
+log/
+*.log
+
+# Machine state
+machines/
+
+# Temporary files
+*.tmp
+*~
+.*.swp
+
+# OS builds
+os/
+
+# PHP
+.phpunit.result.cache

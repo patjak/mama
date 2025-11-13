@@ -16,6 +16,12 @@
     <reservation/>
     <resources/>
     <boot_params/>
+    <vm_params/>
+    <job/>
+    <job_pid/>
+    <job_timestamp/>
+    <startcmd/>
+    <stopcmd/>
   </machine>
   <machine>
     <name>os-builder</name>
@@ -33,5 +39,11 @@
     <reservation/>
     <resources/>
     <boot_params/>
+    <vm_params/>
+    <job/>
+    <job_pid/>
+    <job_timestamp/>
+    <startcmd/>
+    <stopcmd/>
   </machine>
 </settings>

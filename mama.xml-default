@@ -19,7 +19,6 @@
     <vm_params/>
     <job/>
     <job_pid/>
-    <job_timestamp/>
     <startcmd/>
     <stopcmd/>
   </machine>
@@ -42,7 +41,6 @@
     <vm_params/>
     <job/>
     <job_pid/>
-    <job_timestamp/>
     <startcmd/>
     <stopcmd/>
   </machine>

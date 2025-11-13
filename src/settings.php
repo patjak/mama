@@ -243,7 +243,6 @@ class Settings {
 		$m->addChild("vm_params", $mach->vm_params);
 		$m->addChild("job", $mach->job);
 		$m->addChild("job_pid", $mach->job_pid);
-		$m->addChild("job_timestamp", $mach->job_timestamp);
 		$m->addChild("startcmd", $mach->startcmd);
 		$m->addChild("stopcmd", $mach->stopcmd);
 

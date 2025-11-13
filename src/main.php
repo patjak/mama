@@ -1082,7 +1082,6 @@ Commands:
 list						- list configured machines
 list-os	[machine]				- list available OSes
 list-kernel [machine]				- list available kernels
-list-jobs					- list available jobs
 list-resources					- list all resources and what is using them
 log [machine]					- print log file
 job <job> prepare <arch> <os> [worker]		- Execute prepare part of job for arch and os

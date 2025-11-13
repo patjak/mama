@@ -2,7 +2,7 @@
 
 class Machine {
 	public $name, $mac, $ip, $is_started, $arch, $os, $kernel, $pwr_dev, $pwr_slot,
-	       $rly_dev, $rly_slot, $reservation, $resources, $boot_params, $vm_params, $only_vm, $job, $startcmd, $stopcmd;
+	       $rly_dev, $rly_slot, $reservation, $resources, $boot_params, $vm_params, $only_vm, $job, $job_pid, $startcmd, $stopcmd;
 
 	private $lock = 0, $lock_stream = FALSE;
 
@@ -272,6 +272,7 @@ class Machine {
 		$this->vm_params = (string)$obj->vm_params;
 		$this->only_vm = (string)$obj->only_vm;
 		$this->job = (string)$obj->job;
+		$this->job_pid = (string)$obj->job_pid;
 		$this->startcmd = (string)$obj->startcmd;
 		$this->stopcmd = (string)$obj->stopcmd;
 	}
@@ -312,10 +313,45 @@ class Machine {
 		LOCK();
 		$this->load();
 		$this->job = "";
+		$this->job_pid = "";
 		$this->save();
 		UNLOCK();
 
 		$this->out("cleared job");
+	}
+
+	// Check if a job appears to be stale (set but not actually running)
+	public function is_job_stale()
+	{
+		// No job means it can't be stale
+		if ($this->job == "")
+			return FALSE;
+
+		// Check if the process is still running
+		$pid = (int)$this->job_pid;
+		if ($pid <= 0)
+			return TRUE;
+
+		// Check if the process exists
+		exec("ps -p ".$pid." > /dev/null 2>&1", $output, $ret);
+		if ($ret != 0) {
+			// Process doesn't exist - job is stale
+			return TRUE;
+		}
+
+		return FALSE;
+	}
+
+	// Detect and clear stale jobs
+	public function detect_and_clear_stale_job()
+	{
+		if ($this->is_job_stale()) {
+			$this->error("Detected stale job: ".$this->job.
+			            " (PID: ".$this->job_pid.")");
+			$this->clear_job();
+			return TRUE;
+		}
+		return FALSE;
 	}
 
 	public function print_info()
@@ -343,8 +379,13 @@ class Machine {
 		out("Boot params:\t".$this->boot_params);
 		if ($this->vm_params != "")
 			out("VM params:\t".$this->vm_params);
-		if ($this->job != "")
+		if ($this->job != "") {
 			out("Running job:\t".$this->job);
+			if ($this->job_pid != "")
+				out("Job PID:\t".$this->job_pid);
+			if ($this->is_job_stale())
+				out("Job status:\tSTALE (process not running)");
+		}
 		out("Power sensors:");
 
 		// Find power obj

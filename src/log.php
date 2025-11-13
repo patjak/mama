@@ -100,7 +100,7 @@ function out($msg, $no_eol = FALSE, $timestamp = TRUE)
 
 	// Only add PID if we're starting a new line
 	if (DEBUG_PID === TRUE && !$last_no_eol)
-		$msg = Util::string_to_rand_color(getmypid())."\t".$msg;
+		$msg = "\r".Util::string_to_rand_color(getmypid())." ".$msg;
 
 	Log::print_msg($msg, LOG_LVL_DEFAULT, $timestamp);
 

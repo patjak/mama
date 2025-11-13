@@ -9,7 +9,7 @@ class Machine {
 	// Tunables for how to manage machines
 	public static
 		// How long to wait for a machine to boot before giving up (in seconds)
-		$start_timeout = 3 * 60,
+		$start_timeout = 4 * 60,
 
 		// How long to wait for a machine to stop before giving up (in seconds)
 		$stop_timeout = 30,

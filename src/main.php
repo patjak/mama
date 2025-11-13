@@ -201,7 +201,10 @@ function cmd_list()
 		out(Util::pad_str($mach->is_vm() ? "Yes" : "", 4), TRUE);
 
 		// Currently running job
-		out($mach->job);
+		$job_str = $mach->job;
+		if ($job_str != "" && $mach->is_job_stale())
+			$job_str .= " [STALE]";
+		out($job_str);
 	}
 }
 

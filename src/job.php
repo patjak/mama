@@ -102,10 +102,16 @@ class Job {
 			sleep(10);
 			LOCK();
 			$worker_mach->load();
+			// Check for stale jobs while waiting
+			$worker_mach->detect_and_clear_stale_job();
 		}
 
 		$prev_job = $worker_mach->job; // Save old job name in case of nested jobs
+		$prev_job_pid = $worker_mach->job_pid;
+		$prev_job_timestamp = $worker_mach->job_timestamp;
 		$worker_mach->job = $job_str;
+		$worker_mach->job_pid = getmypid();
+		$worker_mach->job_timestamp = time();
 		$worker_mach->save();
 
 		UNLOCK();
@@ -119,6 +125,8 @@ class Job {
 
 		$worker_mach->load();
 		$worker_mach->job = $prev_job;
+		$worker_mach->job_pid = $prev_job_pid;
+		$worker_mach->job_timestamp = $prev_job_timestamp;
 		$worker_mach->save();
 
 		UNLOCK();
@@ -152,10 +160,16 @@ class Job {
 		while ($mach->is_started() && $mach->job != "") {
 			SLEEP_ON_LOCK(10);
 			$mach->load();
+			// Check for stale jobs while waiting
+			$mach->detect_and_clear_stale_job();
 		}
 
 		$prev_job = $mach->job;
+		$prev_job_pid = $mach->job_pid;
+		$prev_job_timestamp = $mach->job_timestamp;
 		$mach->job = "run ".$this->name." ".$arch."/".$os;
+		$mach->job_pid = getmypid();
+		$mach->job_timestamp = time();
 		$mach->save();
 		UNLOCK();
 
@@ -167,6 +181,8 @@ class Job {
 		$mach->stop();
 		$mach->load();
 		$mach->job = $prev_job;
+		$mach->job_pid = $prev_job_pid;
+		$mach->job_timestamp = $prev_job_timestamp;
 		$mach->save();
 		UNLOCK();
 

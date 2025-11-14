@@ -966,15 +966,30 @@ class Machine {
 		return TRUE;
 	}
 
+	// Machine is idle if it's not running and job is empty or set but with a pid matching yours
+	public function is_idle()
+	{
+		if ($this->is_started())
+			return FALSE;
+
+		if ($this->job != "" && $this->job_pid != getmypid())
+			return FALSE;
+
+		return TRUE;
+	}
+
 	// Wait for machine to be stopped and have no queued jobs
 	public function wait()
 	{
 		LOCK();
 		$this->load();
-		if ($this->is_started() || $this->job != "")
-			$this->out("Waiting for machine to become idle ( started: ".($this->is_started() ? "yes " : "no ").($this->job != "" ? "job: ".$this->job : "")." )");
+		if (!$this->is_idle())
+			$this->out("Waiting for machine to become idle ( started: ".
+				($this->is_started() ? "yes" : "no").
+				($this->job != "" ? ", job: ".$this->job : "").
+				($this->job_pid != "" ? ", job_pid: ".$this->job_pid : "").")");
 
-		while ($this->is_started() || $this->job != "") {
+		while (!$this->is_idle()) {
 			SLEEP_ON_LOCK(10);
 			$this->load();
 		}

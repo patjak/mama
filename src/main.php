@@ -357,14 +357,15 @@ function cmd_list_resources()
 
 	foreach ($machs as $mach) {
 		$m_res = explode(" ", $mach->resources);
-		foreach($m_res as $res)
+		foreach($m_res as $res) {
 			if (isset($resources[$res]))
 				$resources[$res] .= " ".$mach->name;
 			else
 				$resources[$res] = $mach->name;
 
 			if ($mach->is_started == 1)
-				$resources[$res] .="*";
+				$resources[$res] .= "*";
+		}
 	}
 
 	ksort($resources);

@@ -1069,31 +1069,38 @@ class Machine {
 		return MAMA_PATH."/machines/".$this->name."/".$this->os."/boot/";
 	}
 
-	function out($msg, $no_eol = FALSE, $timestamp = TRUE)
+	private function print_prefix()
 	{
 		$str = $this->name;
 		if ($this->job != "")
 			$str = $this->name.": ".$this->job;
 
 		$str = Util::string_to_color("(".$str.")", 5);
+
+		return $str;
+	}
+
+	function out($msg, $no_eol = FALSE, $timestamp = TRUE)
+	{
+		$str = $this->print_prefix();
 		out($str." ".$msg, $no_eol, $timestamp);
+	}
+
+	function debug($msg, $no_eol = FALSE, $timestamp = TRUE)
+	{
+		$str = $this->print_prefix();
+		debug($str." ".$msg, $no_eol, $timestamp);
 	}
 
 	function error($msg, $no_eol = FALSE, $timestamp = TRUE)
 	{
-		$str = $this->name;
-		if ($this->job != "")
-			$str = $this->name.": ".$this->job;
-
+		$str = $this->print_prefix();
 		error("(".$str.") ".$msg, $no_eol, $timestamp);
 	}
 
 	function fatal($msg, $errno = 1)
 	{
-		$str = $this->name;
-		if ($this->job != "")
-			$str = $this->name.": ".$this->job;
-
+		$str = $this->print_prefix();
 		fatal("(".$str.") ".$msg, $errno);
 	}
 }

@@ -695,6 +695,8 @@ class Machine {
 			return $this->wait_for_resources($timeout);
 		}
 
+		$this->out("Acquired resources: ".$this->resources);
+
 		return TRUE;
 	}
 

@@ -819,32 +819,17 @@ class Machine {
 			return FALSE;
 		}
 
-		// Find free tap device
-		for ($tap_id = 0; $tap_id <= 10; $tap_id++) {
-			$ret = shell_exec("ip link | grep \"tap".$tap_id.": \" | wc -l");
-			$ret = (int)$ret;
-			if ($ret == 0)
-				break;
-		}
-
-		if ($tap_id > 10) {
-			$this->out("No available tap interface found");
-			UNLOCK();
-			return FALSE;
-		}
-
 		LOCK();
 		$this->load();
 		$this->is_started = 1;
 		$this->save();
 		UNLOCK();
 
-		$this->out("Starting virtual machine with OS ".$this->os." and tap".$tap_id);
+		$this->out("Starting virtual machine with OS ".$this->os);
 		$num_cores = (int)shell_exec("nproc");
 		$cores_str = "-smp ".$num_cores;
 		$sys_str = "-m ".(1024 * 8);
-		$net_str = "-netdev tap,id=net0,ifname=tap".
-			   $tap_id.",script=no,downscript=no -device virtio-net,netdev=net0,mac=".$this->mac;
+		$net_str = "-net nic,model=virtio,macaddr=".$this->mac." -net bridge,br=br0";
 		$os_arch = explode("/", $this->os)[0];
 
 		$mama_arch = trim(shell_exec("uname -p"));

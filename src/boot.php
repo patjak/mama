@@ -21,9 +21,9 @@ if (isset($_GET['MAC'])) {
 }
 
 if (isset($_GET['BOOTINFO'])) {
-	passthru("mama bootinfo ".$mac." ".$server_ip);
+	passthru("/usr/bin/mama bootinfo ".$mac." ".$server_ip);
 } else {
-	passthru("mama ipxe ".$mac." ".$server_ip);
+	passthru("/usr/bin/mama ipxe ".$mac." ".$server_ip);
 }
 
 ?>

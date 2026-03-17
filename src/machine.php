@@ -867,7 +867,7 @@ class Machine {
 			$sys_str .= " -cpu host";
 		}
 
-		$net_str .= " -kernel ".$kernel." -initrd ".$initrd." -append \"".$this->boot_params." ip=dhcp rd.neednet=1 ifname=lan0:".$this->mac." systemd.hostname=".$this->name." root=nfs:".MAMA_HOST.":/machines/".$this->name."/".$this->os.",rw,vers=4 console=ttyS0 console=tty\"";
+		$net_str .= " -kernel ".$kernel." -initrd ".$initrd." -append \"".$this->boot_params." ip=dhcp rd.neednet=1 ifname=lan0:".$this->mac." systemd.hostname=".$this->name." root=nfs:".MAMA_HOST.":/machines/".$this->name."/".$this->os.",rw,vers=4,nconnect=16 console=ttyS0 console=tty\"";
 
 		if ($arch == $mama_arch)
 			$kvm_str = "-enable-kvm";

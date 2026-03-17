@@ -173,7 +173,7 @@ class Machine {
 				$ip = $this->ip;
 		} else {
 			if ($this->ip != $ip) {
-				debug("Changing IP ".$this->ip." -> ".$ip);
+				$this->debug("Changing IP ".$this->ip." -> ".$ip);
 				$this->ip = $ip;
 				$this->save();
 			}
@@ -305,7 +305,7 @@ class Machine {
 		$this->save();
 		UNLOCK();
 
-		$this->out("cleared machine state");
+		$this->debug("cleared machine state");
 	}
 
 	public function clear_job()
@@ -317,7 +317,7 @@ class Machine {
 		$this->save();
 		UNLOCK();
 
-		$this->out("cleared job");
+		$this->debug("cleared job");
 	}
 
 	// Check if a job appears to be stale (set but not actually running)
@@ -588,7 +588,7 @@ class Machine {
 
 		foreach ($data as $key => $val) {
 			if ($key == $attr) {
-				debug("Getting: ".$attr." = ".$val);
+				$this->debug("Getting: ".$attr." = ".$val);
 				return $val;
 			}
 		}
@@ -599,7 +599,7 @@ class Machine {
 	public function wait_for_status($status, $seconds, $dont_print = FALSE)
 	{
 		if (!$dont_print)
-			$this->out("Waiting for status: ".$status."... ");
+			$this->debug("Waiting for status: ".$status."... ");
 
 		$time = time();
 
@@ -608,14 +608,14 @@ class Machine {
 			sleep(1);
 
 			if ($time_passed >= $seconds) {
-				out("timed out after ".$seconds."s", FALSE, FALSE);
+				$this->error("timed out after ".$seconds."s", FALSE, FALSE);
 				return FALSE;
 			}
 		}
 
 		$time_passed = time() - $time;
 		if (!$dont_print)
-			$this->out("Status reached after ".$time_passed." s");
+			$this->debug("Status reached after ".$time_passed." s");
 
 		return TRUE;
 	}
@@ -722,7 +722,7 @@ class Machine {
 
 		if ($status  == "unreachable") {
 			$this->stop();
-			$this->out("Waiting for power cycle delay: ".self::$power_cycle_delay);
+			$this->debug("Waiting for power cycle delay: ".self::$power_cycle_delay);
 			sleep(self::$power_cycle_delay);
 			return $this->start();
 		}
@@ -745,12 +745,12 @@ class Machine {
 			if ($this->pwr_dev != "") {
 				if ($this->get_power() != 0) {
 					$this->set("power", 0);
-					$this->out("Power was already on. Waiting: ".self::$power_cycle_delay." seconds");
+					$this->debug("Power was already on. Waiting: ".self::$power_cycle_delay." seconds");
 					sleep(self::$power_cycle_delay);
 				}
 				$this->set("power", 1);
 			} else if ($this->rly_dev == "") {
-				$this->out("No control device available to turn on the machine");
+				$this->debug("No control device available to turn on the machine");
 			}
 
 			if ($this->rly_dev != "")
@@ -759,7 +759,7 @@ class Machine {
 			$startcmd = $this->startcmd;
 			$startcmd = str_replace("\$OS_ARCH", $this->get_os_arch(), $startcmd);
 			$startcmd = str_replace("\$MAC", $this->mac, $startcmd);
-			$this->out("Start command: ".$startcmd);
+			$this->debug("Start command: ".$startcmd);
 
 			// The command runs in the background so that we can start waiting for the machine
 			passthru($startcmd." > /dev/null &");
@@ -800,7 +800,7 @@ class Machine {
 		$out = trim($out[0]);
 		$pid = explode(" ", $out)[0];
 
-		$this->out("Killing VM with pid ".$pid);
+		$this->debug("Killing VM with pid ".$pid);
 		exec("sudo kill ".$pid);
 	}
 
@@ -814,7 +814,7 @@ class Machine {
 		unset($out);
 		exec("ps aux | grep qemu | grep ".$this->mac, $out, $res);
 		if (count($out) > 1) {
-			$this->out("Failed to start VM. Already running.");
+			$this->error("Failed to start VM. Already running.");
 			UNLOCK();
 			return FALSE;
 		}
@@ -908,7 +908,7 @@ class Machine {
 		$this->load();
 		if (!$this->is_started() && $force != TRUE) {
 			UNLOCK();
-			$this->out("Machine is not started. Ignoring stop.");
+			$this->debug("Machine is not started. Ignoring stop.");
 			return TRUE;
 		}
 		UNLOCK();
@@ -935,7 +935,7 @@ class Machine {
 			} else if ($this->pwr_dev != "") {
 				$this->set("power", 0);
 			} else {
-				$this->out("No control device available to turn off the machine");
+				$this->debug("No control device available to turn off the machine");
 				$this->clear();
 				return FALSE;
 			}
@@ -945,7 +945,7 @@ class Machine {
 			if ($this->rly_dev != "")
 				$this->set("relay", self::$rly_force_off_delay);
 			if ($this->is_vm()) {
-				$this->out("Killing VM");
+				$this->debug("Killing VM");
 				$this->kill_vm();
 			}
 		}
@@ -959,7 +959,7 @@ class Machine {
 		}
 
 		if ($this->stopcmd != "") {
-			$this->out("Stop command: ".$this->stopcmd);
+			$this->debug("Stop command: ".$this->stopcmd);
 			passthru($this->stopcmd." > /dev/null &");
 		}
 
@@ -1005,7 +1005,7 @@ class Machine {
 
 		// Sometimes we don't get the correct status immediately so wait a little bit for it
 		if ($this->wait_for_status("online", 30, TRUE)) {
-			$this->out("ssh: ".$cmd);
+			$this->debug("ssh: ".$cmd);
 			$log_str = Log::$logfile !== FALSE ? " &>> ".Log::$logfile : "";
 
 
@@ -1019,7 +1019,7 @@ class Machine {
 
 			return $res;
 		} else {
-			$this->out("Unable to execute ssh cmd since machine is not online.");
+			$this->error("Unable to execute ssh cmd since machine is not online.");
 			return FALSE;
 		}
 	}
@@ -1071,13 +1071,16 @@ class Machine {
 		return MAMA_PATH."/machines/".$this->name."/".$this->os."/boot/";
 	}
 
-	private function print_prefix()
+	private function print_prefix($no_color = FALSE)
 	{
 		$str = $this->name;
 		if ($this->job != "")
 			$str = $this->name.": ".$this->job;
 
-		$str = Util::string_to_color("(".$str.")", 5);
+		if ($no_color)
+			$str = "(".$str.")";
+		else
+			$str = Util::string_to_color("(".$str.")", 5);
 
 		return $str;
 	}
@@ -1096,8 +1099,8 @@ class Machine {
 
 	function error($msg, $no_eol = FALSE, $timestamp = TRUE)
 	{
-		$str = $this->print_prefix();
-		error("(".$str.") ".$msg, $no_eol, $timestamp);
+		$str = $this->print_prefix(TRUE);
+		error($str." ".$msg, $no_eol, $timestamp);
 	}
 
 	function fatal($msg, $errno = 1)

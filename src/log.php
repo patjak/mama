@@ -48,10 +48,12 @@ class Log {
 	{
 		date_default_timezone_set('Europe/Stockholm');
 
-		if ($level == LOG_LVL_ERROR)
+		if ($level == LOG_LVL_ERROR) {
 			fwrite(STDERR, $msg);
-		else if ($level != LOG_LVL_LOG)
+		} else if ($level == LOG_LVL_DEFAULT ||
+			   ($level == LOG_LVL_DEBUG && DEBUG)) {
 			fwrite(STDOUT, $msg);
+		}
 
 		if (self::$logfile !== FALSE && self::$pause !== TRUE) {
 			if ($timestamp)
@@ -114,6 +116,7 @@ function error($msg, $no_eol = FALSE, $timestamp = TRUE)
 	if ($no_eol == FALSE)
 		$msg .= "\n";
 
+	$msg = Util::string_to_color($msg, 0);
 	Log::print_msg($msg, LOG_LVL_ERROR, $timestamp);
 
 	return strlen($msg);
@@ -132,8 +135,7 @@ function debug($msg, $no_eol = FALSE, $timestamp = FALSE)
 	if ($no_eol == FALSE)
 		$msg .= "\n";
 
-	if (DEBUG)
-		Log::print_msg($msg, LOG_LVL_DEBUG, $timestamp);
+	Log::print_msg($msg, LOG_LVL_DEBUG, $timestamp);
 
 	return strlen($msg);
 }

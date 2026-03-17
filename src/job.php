@@ -77,6 +77,7 @@ class Job {
 
 	public function execute_prepare_job()
 	{
+		$this->out("preparing job: ".$this->name." ".$this->arch." ".$this->os);
 		$arch = $this->arch;
 		$os = $this->os;
 		$worker = $this->mach;
@@ -135,6 +136,7 @@ class Job {
 
 	public function execute_run_job()
 	{
+		$this->out("running job: ".$this->name." ".$this->arch." ".$this->os);
 		$mach = $this->mach;
 		$arch = $this->arch;
 		$os = $this->os;
@@ -221,7 +223,7 @@ class Job {
 				else if ($line == "WORKER")
 					$context = "WORKER";
 
-				$this->out("Switching to context: ".$context." ".($context == "VM" ? $vm_mach->name : ""));
+				$this->debug("Switching to context: ".$context." ".($context == "VM" ? $vm_mach->name : ""));
 
 				// When switching between WORKERs and DEVICEs we must also start and stop the machines
 				if ($old_context != $context) {
@@ -287,7 +289,7 @@ class Job {
 				continue;
 
 			if ($context == "MAMA") {
-				$this->out("(mama) ".$line);
+				$this->debug("(mama) ".$line);
 				$res = NULL;
 				$log_str = Log::$logfile !== FALSE ? " &>> ".Log::$logfile : "";
 				passthru($line." ".$log_str, $res);
@@ -322,7 +324,7 @@ class Job {
 			}
 		}
 
-		$this->out("Execution finished. Turning off machines");
+		$this->out("Job finished");
 
 		if ($mach !== FALSE)
 			$mach->stop();
@@ -339,6 +341,15 @@ class Job {
 			out($msg, $no_eol, $timestamp);
 		else
 			$mach->out($msg, $no_eol, $timestamp);
+	}
+
+	function debug($msg, $no_eol = FALSE, $timestamp = TRUE)
+	{
+		$mach = select_machine($this->mach);
+		if ($mach === FALSE)
+			debug($msg, $no_eol, $timestamp);
+		else
+			$mach->debug($msg, $no_eol, $timestamp);
 	}
 
 	function error($msg, $no_eol = FALSE, $timestamp = TRUE)

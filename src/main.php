@@ -942,7 +942,7 @@ function bootinfo(&$kernel, &$initrd, &$append, $mac, $server_ip)
 	if ($mach->is_vm())
 		$console .= "console=tty0 console=ttyS0";
 
-	$net = "rd.neednet=1 systemd.hostname=".$mach->name." ip=dhcp";
+	$net = "rd.neednet=1 systemd.hostname=".$mach->name." ip=dhcp ifname=lan0:".$mac;
 
 	if ($mach->kernel == "") {
 		$kernel_filename = "kernel-mama";

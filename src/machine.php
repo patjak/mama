@@ -867,13 +867,13 @@ class Machine {
 			$sys_str .= " -cpu host";
 		}
 
-		$net_str .= " -kernel ".$kernel." -initrd ".$initrd." -append \"".$this->boot_params." ip=dhcp rd.neednet=1 systemd.hostname=".$this->name." root=nfs:".MAMA_HOST.":".MAMA_PATH."/machines/".$this->name."/".$this->os.",rw console=ttyS0 console=tty\"";
+		$net_str .= " -kernel ".$kernel." -initrd ".$initrd." -append \"".$this->boot_params." ip=dhcp rd.neednet=1 ifname=lan0:".$this->mac." systemd.hostname=".$this->name." root=nfs:".MAMA_HOST.":".MAMA_PATH."/machines/".$this->name."/".$this->os.",rw console=ttyS0 console=tty\"";
 
 		if ($arch == $mama_arch)
 			$kvm_str = "-enable-kvm";
 
 		$cmd = "sudo screen -d -m qemu-system-".$arch." ".$sys_str." ".$kvm_str." ".$cores_str." ".$net_str." -nographic -serial mon:stdio ".$this->vm_params;
-		$this->out($cmd);
+		$this->debug($cmd);
 		passthru($cmd);
 
 		sleep(3); // Hold the lock so that qemu have a chance to grab it's resources (tap)

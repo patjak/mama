@@ -256,7 +256,7 @@ class Machine {
 	public function fill_from_xmlobj($obj)
 	{
 		$this->name = (string)$obj->name;
-		$this->mac = (string)$obj->mac;
+		$this->mac = strtolower((string)$obj->mac);
 		$this->ip = (string)$obj->ip;
 		$this->is_started = (string)$obj->is_started;
 		$this->arch = (string)$obj->arch;

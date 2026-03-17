@@ -237,44 +237,31 @@ class Job {
 							return FALSE;
 					}
 
-					if ($context == "DEVICE") {
+					if ($context == "DEVICE")
+						$m = $mach;
+					else if ($context == "WORKER")
+						$m = $worker;
+
+					if ($context == "DEVICE" || $context == "WORKER") {
 						// Make sure the device is stopped before starting
-						if (!$mach->stop())
+						if (!$m->stop())
 							return FALSE;
 
-						if ($mach->is_only_vm()) {
-							if (!$mach->start_vm())
+						if ($m->is_only_vm()) {
+							if (!$m->start_vm())
 								return FALSE;
 						} else {
 							// Retry starting 3 times
 							for ($i = 0; $i < 3; $i++) {
-								if ($mach->start())
+								if ($m->start())
 									break;
-								$mach->out("Retrying to start machine: ".$i);
+								$m->debug("Retrying to start machine: ".$i);
 								sleep(2);
 							}
-							if ($i == 3)
+							if ($i == 3) {
+								$m->error("Failed to start machine");
 								return FALSE;
-						}
-
-					}
-
-					if ($context == "WORKER") {
-						if (!$worker->stop())
-							return FALSE;
-
-						if ($worker->is_only_vm()) {
-							if (!$worker->start_vm())
-								return FALSE;
-						} else {
-							for ($i = 0; $i < 3; $i++) {
-								if ($worker->start())
-									break;
-								$worker->out("Retrying to start machine: ".$i);
-								sleep(2);
 							}
-							if ($i == 3)
-								return FALSE;
 						}
 					}
 				}

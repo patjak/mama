@@ -936,7 +936,7 @@ function bootinfo(&$kernel, &$initrd, &$append, $mac, $server_ip)
 		fatal("Machine is not configured in Mama!");
 
 	$path = "http://".$server_ip."/mama/machines/$mach->name/".$mach->os;
-	$root = "root=nfs:".$server_ip.":".MAMA_PATH."/machines/".$mach->name."/".$mach->os.",rw";
+	$root = "root=nfs:".$server_ip.":/machines/".$mach->name."/".$mach->os.",rw,vers=4";
 
 	$console = "";
 	if ($mach->is_vm())

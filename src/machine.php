@@ -741,7 +741,7 @@ class Machine {
 		$this->save();
 		UNLOCK();
 
-		if ($this->startcmd == "" && $status == "offline") {
+		if ($status == "offline") {
 			if ($this->pwr_dev != "") {
 				if ($this->get_power() != 0) {
 					$this->set("power", 0);
@@ -749,21 +749,23 @@ class Machine {
 					sleep(self::$power_cycle_delay);
 				}
 				$this->set("power", 1);
-			} else if ($this->rly_dev == "") {
-				$this->debug("No control device available to turn on the machine");
 			}
 
 			if ($this->rly_dev != "")
 				$this->set("relay", 1);
-		} else if ($this->startcmd != "" && $status == "offline") {
-			$startcmd = $this->startcmd;
-			$startcmd = str_replace("\$OS_ARCH", $this->get_os_arch(), $startcmd);
-			$startcmd = str_replace("\$MAC", $this->mac, $startcmd);
-			$this->debug("Start command: ".$startcmd);
 
-			// The command runs in the background so that we can start waiting for the machine
-			passthru($startcmd." > /dev/null &");
+			if ($this->startcmd != "") {
+				$startcmd = $this->startcmd;
+				$startcmd = str_replace("\$OS_ARCH", $this->get_os_arch(), $startcmd);
+				$startcmd = str_replace("\$MAC", $this->mac, $startcmd);
+				$this->debug("Start command: ".$startcmd);
+
+				// The command runs in the background so that we can start waiting for the machine
+				// passthru($startcmd." > /dev/null &");
+				passthru($startcmd." > /dev/null");
+			}
 		}
+
 
 		$ret = $this->wait_for_status("online", self::$start_timeout);
 
@@ -915,7 +917,7 @@ class Machine {
 				$this->ssh_cmd("halt");
 		}
 
-		if ($status == "unreachable" && $this->stopcmd == "") {
+		if ($status == "unreachable") {
 			if ($this->rly_dev != "") {
 				$this->set("relay", 8);
 			} else if ($this->pwr_dev != "") {
@@ -927,27 +929,27 @@ class Machine {
 			}
 		}
 
-		if (!$this->wait_for_status("offline", self::$stop_timeout)) {
+		if ($this->wait_for_status("offline", self::$stop_timeout)) {
+			if ($this->stopcmd != "") {
+				$this->debug("Stop command: ".$this->stopcmd);
+				// passthru($this->stopcmd." > /dev/null &");
+				passthru($this->stopcmd." > /dev/null");
+			}
+
 			if ($this->rly_dev != "")
 				$this->set("relay", self::$rly_force_off_delay);
 			if ($this->is_vm()) {
 				$this->debug("Killing VM");
 				$this->kill_vm();
 			}
+
 		}
 
 		// Always power off the machine
-		if ($this->stopcmd == "") {
-			if ($this->is_vm())
-				$this->kill_vm();
-			else
-				$this->set("power", 0);
-		}
-
-		if ($this->stopcmd != "") {
-			$this->debug("Stop command: ".$this->stopcmd);
-			passthru($this->stopcmd." > /dev/null &");
-		}
+		if ($this->is_vm())
+			$this->kill_vm();
+		else
+			$this->set("power", 0);
 
 		$this->clear();
 

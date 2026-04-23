@@ -827,7 +827,7 @@ class Machine {
 		$this->save();
 		UNLOCK();
 
-		$this->out("Starting virtual machine with OS ".$this->os);
+		$this->out("Starting virtual machine with OS ".$this->os." and kernel ".$this->kernel);
 		$num_cores = (int)shell_exec("nproc");
 		$cores_str = "-smp ".$num_cores;
 		$sys_str = "-m ".(1024 * 8);

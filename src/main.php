@@ -827,7 +827,7 @@ function cmd_start($arg)
 	if ($mach === false)
 		return;
 
-	$mach->out("Starting machine with OS ".$mach->os);
+	$mach->out("Starting machine with OS ".$mach->os." and kernel ".$mach->kernel);
 	$mach->start();
 }
 

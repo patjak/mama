@@ -215,7 +215,21 @@ class Settings {
 		self::lock();
 		$i = Settings::get_machine_index($mach);
 		Settings::delete_machine($mach);
+
+		// Convert to XML string
+		foreach ($mach as $key => $value) {
+			$value = htmlspecialchars($value, ENT_QUOTES);
+			$mach->$key = $value;
+		}
+
 		Settings::add_machine($mach);
+
+		// Convert back to normal strings
+		foreach ($mach as $key => $value) {
+			$value = htmlspecialchars_decode($value, ENT_QUOTES);
+			$mach->$key = $value;
+		}
+
 		self::unlock();
 	}
 

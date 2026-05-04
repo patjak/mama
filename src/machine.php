@@ -760,9 +760,7 @@ class Machine {
 				$startcmd = str_replace("\$MAC", $this->mac, $startcmd);
 				$this->debug("Start command: ".$startcmd);
 
-				// The command runs in the background so that we can start waiting for the machine
-				// passthru($startcmd." > /dev/null &");
-				passthru($startcmd." > /dev/null");
+				passthru($startcmd);
 			}
 		}
 
@@ -931,9 +929,10 @@ class Machine {
 
 		if ($this->wait_for_status("offline", self::$stop_timeout)) {
 			if ($this->stopcmd != "") {
-				$this->debug("Stop command: ".$this->stopcmd);
-				// passthru($this->stopcmd." > /dev/null &");
-				passthru($this->stopcmd." > /dev/null");
+				$stopcmd = $this->stopcmd;
+
+				$this->debug("Stop command: ".$stopcmd);
+				passthru($stopcmd);
 			}
 
 			if ($this->rly_dev != "")

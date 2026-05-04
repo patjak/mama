@@ -758,6 +758,7 @@ class Machine {
 				$startcmd = $this->startcmd;
 				$startcmd = str_replace("\$OS_ARCH", $this->get_os_arch(), $startcmd);
 				$startcmd = str_replace("\$MAC", $this->mac, $startcmd);
+				$startcmd = str_replace("\$PID", getmypid(), $startcmd);
 				$this->debug("Start command: ".$startcmd);
 
 				passthru($startcmd);
@@ -930,6 +931,9 @@ class Machine {
 		if ($this->wait_for_status("offline", self::$stop_timeout)) {
 			if ($this->stopcmd != "") {
 				$stopcmd = $this->stopcmd;
+				$stopcmd = str_replace("\$OS_ARCH", $this->get_os_arch(), $stopcmd);
+				$stopcmd = str_replace("\$MAC", $this->mac, $stopcmd);
+				$stopcmd = str_replace("\$PID", getmypid(), $stopcmd);
 
 				$this->debug("Stop command: ".$stopcmd);
 				passthru($stopcmd);

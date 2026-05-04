@@ -202,6 +202,8 @@ class Job {
 
 	public function execute($job, $mach = FALSE, $worker = FALSE)
 	{
+		$no_retry = isset(Options::$options["no-retry"]) ? TRUE : FALSE;
+
 		$SSH_RET = 0; // Stores the return code from the last executed command
 		$error = FALSE;
 		$context = "";
@@ -252,13 +254,18 @@ class Job {
 								return FALSE;
 						} else {
 							// Retry starting 3 times
-							for ($i = 0; $i < 3; $i++) {
+							$num_retries = 3;
+
+							if ($no_retry) {
+								$num_retries = 1;
+							}
+							for ($i = 0; $i < $num_retries; $i++) {
 								if ($m->start())
 									break;
 								$m->debug("Retrying to start machine: ".$i);
 								sleep(2);
 							}
-							if ($i == 3) {
+							if ($i == $num_retries) {
 								$m->error("Failed to start machine");
 								return FALSE;
 							}

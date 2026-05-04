@@ -5,7 +5,8 @@ $opts = array(	"args:",
 		"debug-lock",
 		"debug-pid",
 		"packages:",
-		"no-ssh-timeout");
+		"no-ssh-timeout",
+		"no-retry");
 
 $cmds = Options::parse($argv, $opts);
 
@@ -1095,6 +1096,7 @@ job <job> prepare <arch> <os> [worker]		- Execute prepare part of job for arch a
 job <job> run <machine>	<arch> <os>		- Execute job on specified machine
   [--args=] - Additional arguments to pass along
   [--no-ssh-timeout] - Allows ssh commands to run indefinitely
+  [--no-retry] - Don't retry to start machines multiple times
 
 build-os <arch> <os> [worker]			- build a deployable os locally or on specified machine
   [--packages=...] - Additional packages to install

@@ -7,7 +7,7 @@ require_once(MAMA_PATH."/src/machine.php");
 // Here you can overwrite the default delays and timeouts
 // All timeouts are in seconds
 
-// Machine::$start_timeout = 4 * 60;
+// Machine::$start_timeout_default = 4 * 60;
 // Machine::$stop_timeout = 30;
 // Machine::$ssh_cmd_timeout = 1 * 60;
 // Machine::$rly_force_off_delay = 8;

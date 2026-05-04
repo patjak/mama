@@ -1026,7 +1026,7 @@ function cmd_set($argv)
 		return;
 
 	if (!isset($argv[3]))
-		$attr = Util::get_line("{power | relay | os | kernel | resources | params | vmparams}: ");
+		$attr = Util::get_line("{power | relay | os | kernel | resources | params | vmparams | start-timeout}: ");
 	else
 		$attr = $argv[3];
 

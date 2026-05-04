@@ -259,6 +259,7 @@ class Settings {
 		$m->addChild("job_pid", $mach->job_pid);
 		$m->addChild("startcmd", $mach->startcmd);
 		$m->addChild("stopcmd", $mach->stopcmd);
+		$m->addChild("start_timeout", $mach->start_timeout);
 
 		Settings::save();
 		self::unlock();

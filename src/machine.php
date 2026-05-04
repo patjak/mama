@@ -2,14 +2,15 @@
 
 class Machine {
 	public $name, $mac, $ip, $is_started, $arch, $os, $kernel, $pwr_dev, $pwr_slot,
-	       $rly_dev, $rly_slot, $reservation, $resources, $boot_params, $vm_params, $only_vm, $job, $job_pid, $startcmd, $stopcmd;
+	       $rly_dev, $rly_slot, $reservation, $resources, $boot_params, $vm_params,
+	       $only_vm, $job, $job_pid, $startcmd, $stopcmd, $start_timeout;
 
 	private $lock = 0, $lock_stream = FALSE;
 
 	// Tunables for how to manage machines
 	public static
 		// How long to wait for a machine to boot before giving up (in seconds)
-		$start_timeout = 4 * 60,
+		$start_timeout_default = 4 * 60,
 
 		// How long to wait for a machine to stop before giving up (in seconds)
 		$stop_timeout = 30,
@@ -275,6 +276,11 @@ class Machine {
 		$this->job_pid = (string)$obj->job_pid;
 		$this->startcmd = (string)$obj->startcmd;
 		$this->stopcmd = (string)$obj->stopcmd;
+		$this->start_timeout = (string)$obj->start_timeout;
+
+		// Handle defaults
+		if ($this->start_timeout == "")
+			$this->start_timeout = Machine::$start_timeout_default;
 	}
 
 	public function save()
@@ -528,6 +534,17 @@ class Machine {
 			$this->save();
 			UNLOCK();
 			break;
+		case "start-timeout":
+			out("Current start-timeout: ".$this->start_timeout);
+			if ($val == "")
+				$val = Util::get_line("Enter new start-timeout (leave empty for default): ");
+
+			LOCK();
+			$this->load();
+			$this->start_timeout = $val;
+			$this->save();
+			UNLOCK();
+			break;
 		}
 	}
 
@@ -766,7 +783,7 @@ class Machine {
 		}
 
 
-		$ret = $this->wait_for_status("online", self::$start_timeout);
+		$ret = $this->wait_for_status("online", $this->start_timeout);
 
 		if ($this->get_status() != "online")
 			$this->stop();
@@ -880,7 +897,7 @@ class Machine {
 		sleep(3); // Hold the lock so that qemu have a chance to grab it's resources (tap)
 		UNLOCK(); // All resources are grabbed so we can let other VMs start
 
-		$ret = $this->wait_for_status("online", self::$start_timeout);
+		$ret = $this->wait_for_status("online", $this->start_timeout);
 		if (!$ret) {
 			$this->kill_vm();
 			$this->clear();

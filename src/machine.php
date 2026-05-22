@@ -371,7 +371,7 @@ class Machine {
 		out("Is started:\t".($this->is_started() ? "yes" : "no"));
 		out("Is only VM:\t".($this->only_vm == 1 ? "yes" : "no"));
 		out("OS:\t\t".$this->os);
-		out("Kernel:\t\t".($this->kernel == "" ? "default" : $this->kernel));
+		out("Kernel:\t\t".$this->kernel);
 		out("Status:\t\t".$this->get_status());
 		out("Power device:\t".$this->pwr_dev.",".$this->pwr_slot);
 		if ($this->rly_dev != "")
@@ -440,6 +440,7 @@ class Machine {
 				$this->kernel = "";
 				$this->save();
 				UNLOCK();
+				$this->set("kernel", "latest");
 			} else {
 				fatal("Invalid OS: ".$val);
 			}
@@ -457,9 +458,6 @@ class Machine {
 					}
 				}
 			}
-
-			if (strtolower($val) == "default")
-				$val = "";
 
 			if (in_array($val, array_keys($kernels)) || $val == "") {
 				// Make sure the initrd is readable so that the webserver can serve it
@@ -855,13 +853,12 @@ class Machine {
 
 		$arch_str = "";
 
-		if ($this->kernel == "") {
-			$kernel_filename = "kernel-mama";
-			$initrd_filename = "initrd-mama";
-		} else {
+		if ($os_arch == "aarch64")
+			$kernel_filename = "Image-".$this->kernel;
+		else
 			$kernel_filename = "vmlinuz-".$this->kernel;
-			$initrd_filename = "initrd-".$this->kernel;
-		}
+		$initrd_filename = "initrd-".$this->kernel;
+
 		$kernel = $this->get_kernel_path().$kernel_filename;
 		$initrd = $this->get_kernel_path().$initrd_filename;
 
@@ -1049,7 +1046,6 @@ class Machine {
 		$rows = explode(PHP_EOL, $res);
 
 		$kernels = array();
-		$kernels["default"] = "";
 
 		foreach ($rows as $row) {
 			if ($row == "")

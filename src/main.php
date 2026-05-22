@@ -513,54 +513,82 @@ function cmd_run_os_build_script($args)
 	$cmd = $need_sudo." kiwi-ng --debug system prepare --description ".$desc." --root ".$tmp_dir." ".$packages_str;
 	out($cmd);
 	passthru($cmd, $code);
-	if ($code != 0)
-		fatal("Failed to build os with kiwi");
+	if ($code != 0) {
+		error("Failed to build os with kiwi");
+		goto err_rm;
+	}
 
 	passthru($need_sudo." mount -t proc /proc ".$tmp_dir."/proc", $code);
-	if ($code != 0)
-		fatal("Failed to mount procfs to ".$tmp_dir."/proc");
-
-	passthru($need_sudo." chroot ".$tmp_dir." dracut -f", $code);
 	if ($code != 0) {
-		passthru($need_sudo." umount ".$tmp_dir."/proc", $code);
-		fatal("Failed to run dracut -f inside chroot");
+		error("Failed to mount procfs to ".$tmp_dir."/proc");
+		goto err_rm;
+	}
+
+	passthru($need_sudo." mount -t sysfs sysfs ".$tmp_dir."/sys", $code);
+	if ($code != 0) {
+		error("Failed to mount sysfs to ".$tmp_dir."/sys");
+		goto err_umount_proc;
+	}
+
+	// We need to figure out the kernel version and pass it to dracut
+	exec("ls ".$tmp_dir."/boot/config-*", $out, $code);
+	if ($code != 0) {
+		error("Failed to find /boot/config-*");
+		goto err_umount_sysfs;
+	}
+	$kver = $out[0];
+	$kver = explode("config-", $kver)[1];
+
+	passthru($need_sudo." chroot ".$tmp_dir." dracut -f --kver ".$kver, $code);
+	if ($code != 0) {
+		error("Failed to run dracut -f inside chroot");
+		goto err_umount_sysfs;
 	}
 
 	passthru($need_sudo." umount ".$tmp_dir."/proc", $code);
-	if ($code != 0)
-		fatal("Failed to umount ".$tmp_dir."/proc");
+	if ($code != 0) {
+		error("Failed to umount ".$tmp_dir."/proc");
+		goto err_rm;
+	}
 
-	unset($code);
+	passthru($need_sudo." umount ".$tmp_dir."/sys", $code);
+	if ($code != 0) {
+		error("Failed to umount ".$tmp_dir."/sys");
+		goto err_umount_proc;
+	}
+
 	passthru($need_sudo." rm -Rf ".$target, $code);
-	if ($code != 0)
-		fatal("Failed to remove old version of os: ".$target);
+	if ($code != 0) {
+		error("Failed to remove old version of os: ".$target);
+		goto err_umount_sysfs;
+	}
 
 	out("Moving OS into place");
-	unset($code);
 	passthru($need_sudo." mv ".$tmp_dir." ".$target, $code);
-	if ($code != 0)
-		fatal("Failed to store new os build");
+	if ($code != 0) {
+		error("Failed to store new os build");
+		goto err_rm;
+	}
 
-	// Create default link to initrd
-	passthru($need_sudo." ln -s ".$target."/boot/initrd-* ".$target."/boot/initrd-mama", $code);
-	if ($code != 0)
-		fatal("Failed to create default link to initrd");
-
-	// Create default link to kernel
-	passthru($need_sudo." ln -s ".$target."/boot/vmlinuz-* ".$target."/boot/kernel-mama", $code);
-	if ($code != 0)
-		fatal("Failed to create default link to kernel");
-
-	unset($code);
 	passthru($need_sudo." chmod 644 ".$target."/boot/initrd-*", $code);
 	if ($code != 0)
 		fatal("Failed to change permission on initrd");
 
 	// Copy the authorized_keys file so ssh commands can be executed by mama
-	unset($code);
 	passthru($need_sudo." mkdir -p ".$target."/root/.ssh && ".$need_sudo." cp ".MAMA_PATH."/authorized_keys ".$target."/root/.ssh/", $code);
 	if ($code != 0)
 		fatal("Failed to copy authorized_keys");
+
+	out("OS build completed");
+
+	return;
+
+err_umount_sysfs:
+	passthru($need_sudo." umount ".$tmp_dir."/sys", $code);
+err_umount_proc:
+	passthru($need_sudo." umount ".$tmp_dir."/proc", $code);
+err_rm:
+	passthru($need_sudo." rm -Rf ".$tmp_dir, $code);
 }
 
 function cmd_install_os($args)
@@ -599,12 +627,14 @@ function cmd_install_os($args)
 
 	$need_sudo = Util::is_root() ? "" : "sudo";
 
-	unset($res);
 	passthru($need_sudo." rm -Rf ".$dst, $res);
 	if ($res != 0)
 		fatal("Failed to remove previous installation of the OS");
 
-	unset($res);
+	passthru($need_sudo." mkdir -p ".MAMA_PATH."/machines/".$machine."/".$arch, $res);
+	if ($res != 0)
+		fatal("Failed to create directory ".$dst);
+
 	passthru($need_sudo." cp -r --reflink=auto ".$src." ".$dst, $res);
 	if ($res != 0)
 		fatal("Failed to copy new OS to destination");
@@ -954,18 +984,13 @@ function bootinfo(&$kernel, &$initrd, &$append, $mac, $server_ip)
 
 	$net = "rd.neednet=1 systemd.hostname=".$mach->name." ip=dhcp ifname=lan0:".$mac;
 
-	if ($mach->kernel == "") {
-		$kernel_filename = "kernel-mama";
-		$initrd_filename = "initrd-mama";
-	} else {
-		$arch = explode("/", $mach->os)[0];
-		if ($arch == "aarch64")
-			$kernel_filename = "Image-".$mach->kernel;
-		else
-			$kernel_filename = "vmlinuz-".$mach->kernel;
-		$initrd_filename = "initrd-".$mach->kernel;
-	}
+	$arch = explode("/", $mach->os)[0];
+	if ($arch == "aarch64")
+		$kernel_filename = "Image-".$mach->kernel;
+	else
+		$kernel_filename = "vmlinuz-".$mach->kernel;
 
+	$initrd_filename = "initrd-".$mach->kernel;
 	$params = $root." ".$console." ".$net." ".$mach->boot_params;
 
 	// IMPORTANT: For UEFI to boot properly initrd=<filename> must be specified

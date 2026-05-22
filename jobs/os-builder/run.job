@@ -1,5 +1,5 @@
 [MAMA]
-mama copy-os os-builder $ARCH os-builder $MACH
+mama copy-os --no-overwrite os-builder $ARCH os-builder $MACH
 mama set $MACH os $ARCH/os-builder
 mama set $MACH kernel Default
 

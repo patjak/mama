@@ -6,7 +6,8 @@ $opts = array(	"args:",
 		"debug-pid",
 		"packages:",
 		"no-ssh-timeout",
-		"no-retry");
+		"no-retry",
+		"no-overwrite");
 
 $cmds = Options::parse($argv, $opts);
 
@@ -617,6 +618,11 @@ function cmd_install_os($args)
 
 function cmd_copy_os($args)
 {
+	if (isset(Options::$options["no-overwrite"]))
+		$no_overwrite = TRUE;
+	else
+		$no_overwrite = FALSE;
+
 	if (!Util::is_root())
 		error("You must be root to run this command");
 
@@ -639,7 +645,12 @@ function cmd_copy_os($args)
 		fatal("Couldn't find machine with name ".$args[5]);
 
 	if ($src_mach->name == $dst_mach->name) {
-		out("Source and destination machines are the same. Skipping copy.");
+		debug("Source and destination machines are the same. Skipping copy.");
+		return;
+	}
+
+	if ($no_overwrite && is_dir(MAMA_PATH."/machines/".$dst_mach->name."/".$arch."/".$os)) {
+		debug("Skipping copy-os since os exists and no-overwrite was specified");
 		return;
 	}
 

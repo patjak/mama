@@ -510,54 +510,57 @@ function cmd_run_os_build_script($args)
 	passthru($need_sudo." rm -Rf ".$tmp_dir);
 
 	unset($code);
-	passthru($need_sudo." kiwi-ng --type=kis --debug system build --description ".$desc." --target-dir ".$tmp_dir." ".$packages_str, $code);
+	$cmd = $need_sudo." kiwi-ng --debug system prepare --description ".$desc." --root ".$tmp_dir." ".$packages_str;
+	out($cmd);
+	passthru($cmd, $code);
 	if ($code != 0)
 		fatal("Failed to build os with kiwi");
+
+	passthru($need_sudo." mount -t proc /proc ".$tmp_dir."/proc", $code);
+	if ($code != 0)
+		fatal("Failed to mount procfs to ".$tmp_dir."/proc");
+
+	passthru($need_sudo." chroot ".$tmp_dir." dracut -f", $code);
+	if ($code != 0) {
+		passthru($need_sudo." umount ".$tmp_dir."/proc", $code);
+		fatal("Failed to run dracut -f inside chroot");
+	}
+
+	passthru($need_sudo." umount ".$tmp_dir."/proc", $code);
+	if ($code != 0)
+		fatal("Failed to umount ".$tmp_dir."/proc");
 
 	unset($code);
 	passthru($need_sudo." rm -Rf ".$target, $code);
 	if ($code != 0)
 		fatal("Failed to remove old version of os: ".$target);
 
-	passthru($need_sudo." mkdir -p ".$target);
-
+	out("Moving OS into place");
 	unset($code);
-	passthru($need_sudo." mv ".$tmp_dir."/* ".$target, $code);
+	passthru($need_sudo." mv ".$tmp_dir." ".$target, $code);
 	if ($code != 0)
 		fatal("Failed to store new os build");
 
-	unset($code);
-	passthru($need_sudo." rmdir ".$tmp_dir, $code);
-	if ($code != 0 )
-		fatal("Failed to remove ".$tmp_dir);
-
-	unset($code);
-	passthru($need_sudo." cp ".$target."/*.initrd ".$target."/build/image-root/boot/initrd-mama", $code);
+	// Create default link to initrd
+	passthru($need_sudo." ln -s ".$target."/boot/initrd-* ".$target."/boot/initrd-mama", $code);
 	if ($code != 0)
-		fatal("Failed to create initrd default links for new os");
+		fatal("Failed to create default link to initrd");
+
+	// Create default link to kernel
+	passthru($need_sudo." ln -s ".$target."/boot/vmlinuz-* ".$target."/boot/kernel-mama", $code);
+	if ($code != 0)
+		fatal("Failed to create default link to kernel");
 
 	unset($code);
-	passthru($need_sudo." chmod 644 ".$target."/build/image-root/boot/initrd-mama", $code);
+	passthru($need_sudo." chmod 644 ".$target."/boot/initrd-*", $code);
 	if ($code != 0)
 		fatal("Failed to change permission on initrd");
 
-	unset($code);
-	passthru($need_sudo." cp ".$target."/*.kernel ".$target."/build/image-root/boot/kernel-mama", $code);
-	if ($code != 0)
-		fatal("Failed to create kernel default links for new os");
-
-	// Make sure the web server have permissions to serve the initrd
-	unset($code);
-	passthru($need_sudo." chmod 644 ".$target."/*initrd*", $code);
-	if ($code != 0)
-		fatal("Failed to set permissions on initrd");
-
 	// Copy the authorized_keys file so ssh commands can be executed by mama
 	unset($code);
-	passthru($need_sudo." mkdir -p ".$target."/build/image-root/root/.ssh && ".$need_sudo." cp ".MAMA_PATH."/authorized_keys ".$target."/build/image-root/root/.ssh/", $code);
+	passthru($need_sudo." mkdir -p ".$target."/root/.ssh && ".$need_sudo." cp ".MAMA_PATH."/authorized_keys ".$target."/root/.ssh/", $code);
 	if ($code != 0)
 		fatal("Failed to copy authorized_keys");
-
 }
 
 function cmd_install_os($args)
@@ -602,12 +605,7 @@ function cmd_install_os($args)
 		fatal("Failed to remove previous installation of the OS");
 
 	unset($res);
-	passthru($need_sudo." mkdir -p ".$dst, $res);
-	if ($res != 0)
-		fatal("Failed to create directory for new OS");
-
-	unset($res);
-	passthru($need_sudo." cp -r --reflink=auto ".$src."/build/image-root/* ".$dst, $res);
+	passthru($need_sudo." cp -r --reflink=auto ".$src." ".$dst, $res);
 	if ($res != 0)
 		fatal("Failed to copy new OS to destination");
 

@@ -71,6 +71,9 @@ function parse_args($argv)
 	case "install-os":
 		cmd_install_os($argv);
 		break;
+	case "delete-os":
+		cmd_delete_os($argv);
+		break;
 	case "copy-os":
 		cmd_copy_os($argv);
 		break;
@@ -644,6 +647,34 @@ function cmd_install_os($args)
 	return FALSE;
 }
 
+function cmd_delete_os($args)
+{
+	$need_sudo = Util::is_root() ? "" : "sudo";
+
+	if (!Util::is_root())
+		out("You must be root to run this command");
+
+	if (!isset($args[4]))
+		fatal("Not enough arguments");
+
+	$machine = $args[2];
+	$arch = $args[3];
+	$os = $args[4];
+
+	$mach = select_machine($machine);
+	if ($mach === FALSE)
+		fatal("Invalid machine name");
+
+	out("Deleting OS ".$machine."/".$arch."/".$os);
+
+	if (!Os::is_runnable($arch, $os, $mach))
+		fatal("OS isn't installed and cannot be deleted");
+
+	passthru($need_sudo." rm -Rf ".MAMA_PATH."/machines/".$machine."/".$arch."/".$os, $code);
+	if ($code != 0)
+		fatal("Failed to delete OS ".$machine."/".$arch."/".$os);
+}
+
 function cmd_copy_os($args)
 {
 	if (isset(Options::$options["no-overwrite"]))
@@ -1136,6 +1167,7 @@ build-os <arch> <os> [worker]			- build a deployable os locally or on specified 
   [--packages=...] - Additional packages to install
 
 install-os <machine> <arch> <os> [name]		- install os to a machine
+delete-os <machine> <arch> <os>			- delete an os installed to a machine
 copy-os <src-mach> <arch> <os> <dst-mach>	- copy an os from one machine to another
 new						- add a new machine
 delete [machine]				- delete existing machine

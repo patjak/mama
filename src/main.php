@@ -548,23 +548,21 @@ function cmd_run_os_build_script($args)
 		goto err_umount_sysfs;
 	}
 
-	passthru($need_sudo." umount ".$tmp_dir."/proc", $code);
-	if ($code != 0) {
-		error("Failed to umount ".$tmp_dir."/proc");
-		goto err_rm;
-	}
-
 	passthru($need_sudo." umount ".$tmp_dir."/sys", $code);
-	if ($code != 0) {
-		error("Failed to umount ".$tmp_dir."/sys");
-		goto err_umount_proc;
-	}
+	if ($code != 0)
+		fatal("Failed to umount ".$tmp_dir."/sys");
+
+	passthru($need_sudo." umount ".$tmp_dir."/proc", $code);
+	if ($code != 0)
+		fatal("Failed to umount ".$tmp_dir."/proc");
 
 	passthru($need_sudo." rm -Rf ".$target, $code);
-	if ($code != 0) {
-		error("Failed to remove old version of os: ".$target);
-		goto err_umount_sysfs;
-	}
+	if ($code != 0)
+		fatal("Failed to remove old version of os: ".$target);
+
+	passthru($need_sudo." mkdir -p ".MAMA_PATH."/os/".$arch."/", $code);
+	if ($code != 0)
+		fatal("Failed to create target directory");
 
 	out("Moving OS into place");
 	passthru($need_sudo." mv ".$tmp_dir." ".$target, $code);

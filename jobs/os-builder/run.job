@@ -9,3 +9,5 @@ echo "nameserver 8.8.8.8" > /etc/resolv.conf
 zypper --no-gpg-checks --non-interactive in php python3-kiwi php8-curl netcat-openbsd python3-xmltodict
 
 mama run-os-build-script $ARCH $OS --packages="$ARGS"
+
+umount $MAMA_PATH

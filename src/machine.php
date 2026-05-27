@@ -973,14 +973,42 @@ class Machine {
 		return TRUE;
 	}
 
+	public function is_ancestor($ancestor_pid, $pid = FALSE)
+	{
+		if ($pid === FALSE)
+			$pid = getmypid();
+
+		// In this case, we are considered to be an ancestor to ourselves
+		if ($ancestor_pid == $pid)
+			return TRUE;
+
+		exec("ps -p $pid -o ppid=", $ret, $code);
+		if ($code != 0)
+			fatal("Failed to look for ancestor with ps: pid=".$pid);
+
+		$parent_pid = (int)$ret[0];
+
+		if ($parent_pid == 0)
+			return FALSE;
+
+		if ($parent_pid == $ancestor_pid)
+			return TRUE;
+
+		return $this->is_ancestor($ancestor_pid, $parent_pid);
+	}
+
 	// Machine is idle if it's not running and job is empty or set but with a pid matching yours
 	public function is_idle()
 	{
 		if ($this->is_started())
 			return FALSE;
 
-		if ($this->job != "" && $this->job_pid != getmypid())
+		if ($this->job != "" && !$this->is_ancestor($this->job_pid))
 			return FALSE;
+
+		if ($this->is_ancestor($this->job_pid)) {
+			error("NESTING JOBS!");
+		}
 
 		return TRUE;
 	}

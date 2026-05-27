@@ -95,10 +95,10 @@ class Job {
 
 		// Wait for the worker to finish any running jobs
 		$worker_mach = select_machine($worker);
-		if ($worker_mach->is_started && $worker_mach->job != "")
+		if (!$worker_mach->is_idle())
 			$this->out("Waiting for job to finish: ".$worker_mach->job);
 
-		while ($worker_mach->is_started && $worker_mach->job != "") {
+		while (!$worker_mach->is_idle()) {
 			UNLOCK();
 			sleep(10);
 			LOCK();
@@ -153,10 +153,10 @@ class Job {
 			return FALSE;
 		}
 
-		if ($mach->is_started() && $mach->job != "")
+		if (!$mach->is_idle())
 			$this->out("Waiting for job to finish: ".$mach->job);
 
-		while ($mach->is_started() && $mach->job != "") {
+		while (!$mach->is_idle()) {
 			SLEEP_ON_LOCK(10);
 			$mach->load();
 			// Check for stale jobs while waiting

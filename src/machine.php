@@ -430,19 +430,20 @@ class Machine {
 				$dev->push($this->rly_slot, $val);
 			break;
 		case "os":
-			$arch = explode("/", $val)[0];
-			$os = explode("/", $val)[1];
+			$arch = $val->arch;
+			$os = $val->os;
+			$os_str = $val->arch."/".$val->os;
 			if (Os::is_runnable($arch, $os, $this)) {
 				LOCK();
 				$this->load();
-				$this->out("Setting OS ".$val);
-				$this->os = $val;
+				$this->out("Setting OS ".$os_str);
+				$this->os = $os_str;
 				$this->kernel = "";
 				$this->save();
 				UNLOCK();
 				$this->set("kernel", "latest");
 			} else {
-				fatal("Invalid OS: ".$val);
+				fatal("Invalid OS: ".$os_str);
 			}
 			break;
 		case "kernel":

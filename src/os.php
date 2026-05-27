@@ -1,6 +1,8 @@
 <?php
 
 class Os {
+	var $os, $arch;
+
 	static function is_buildable($arch, $os)
 	{
 		$path = MAMA_PATH."/os-descriptions/";

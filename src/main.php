@@ -740,7 +740,10 @@ function select_os($mach)
 		out(Util::pad_str($os, 32));
 	}
 
-	$os = Util::ask_from_array($oses, "OS:");
+	$ask = Util::ask_from_array($oses, "OS:");
+	$os = new Os();
+	$os->arch = explode("/", $ask)[0];
+	$os->os = explode("/", $ask)[1];
 
 	return $os;
 }
@@ -1108,8 +1111,13 @@ function cmd_set($argv)
 			$val = Util::get_line("Time (secs): ");
 		break;
 	case "os":
-		if ($val === false)
+		if ($val === false) {
 			$val = select_os($mach);
+		} else {
+			$val = new Os();
+			$val->arch = $argv[4];
+			$val->os = $argv[5];
+		}
 		break;
 	case "kernel":
 		if ($val === false)

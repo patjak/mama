@@ -1,6 +1,6 @@
 [MAMA]
 mama copy-os --no-overwrite os-builder $ARCH os-builder $MACH
-mama set $MACH os $ARCH/os-builder
+mama set $MACH os $ARCH os-builder
 
 [DEVICE]
 mkdir -p $MAMA_PATH ; mount -t nfs $MAMA_HOST:$MAMA_PATH $MAMA_PATH ; rm /usr/sbin/mama ; ln -s $MAMA_PATH/src/mama /usr/sbin/mama ; echo

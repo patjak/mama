@@ -257,7 +257,7 @@ function cmd_new()
 		$only_vm = 0;
 
 	// Don't bother with power devices or relay devices if machine is only virtual
-	if ($only_vm == 0) {
+	if ($only_vm == 0 && count(CtlDev::$devs) > 1) {
 		// Select power device
 		out("No\tPower device\tSlots");
 		out("--------------------------------");

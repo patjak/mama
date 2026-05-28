@@ -373,15 +373,25 @@ class Machine {
 		out("OS:\t\t".$this->os);
 		out("Kernel:\t\t".$this->kernel);
 		out("Status:\t\t".$this->get_status());
-		out("Power device:\t".$this->pwr_dev.",".$this->pwr_slot);
+		if ($this->pwr_dev != "")
+			out("Power device:\t".$this->pwr_dev.",".$this->pwr_slot);
 		if ($this->rly_dev != "")
 			out("Relay device:\t".$this->rly_dev.",".$this->rly_slot);
-		out("Reserved by:\t".$this->reservation);
-		out("Resources:\t".$this->resources." (nested: ".Machine::get_nested_resources($this->name).")");
+		if ($this->reservation != "")
+			out("Reserved by:\t".$this->reservation);
+
+		$nested = Machine::get_nested_resources($this->name);
+		$nested_str = "";
+		if ($nested != "")
+			$nested_str = "(nested: ".$nested.")";
+
+		if ($this->resources != "")
+			out("Resources:\t".$this->resources." ".$nested_str);
 		if ($this->startcmd != "")
 			out("Start command:\t".$this->startcmd);
 		if ($this->stopcmd != "")
 			out("Stop command:\t".$this->stopcmd);
+		out("Start timeout:\t".$this->start_timeout);
 		out("Boot params:\t".$this->boot_params);
 		if ($this->vm_params != "")
 			out("VM params:\t".$this->vm_params);
@@ -392,25 +402,28 @@ class Machine {
 			if ($this->is_job_stale())
 				out("Job status:\tSTALE (process not running)");
 		}
-		out("Power sensors:");
 
-		// Find power obj
-		$dev = CtlDev::get_by_name($this->pwr_dev);
-		if ($dev === false) {
-			out("Couldn't find power device");
-			return;
-		}
+		if ($this->pwr_dev != "") {
+			out("Power sensors:");
 
-		$data = $dev->get_sensors($this->pwr_slot);
-		if ($data === NULL) {
-			out("No sensors found");
-			return;
-		}
+			// Find power obj
+			$dev = CtlDev::get_by_name($this->pwr_dev);
+			if ($dev === false) {
+				out("Couldn't find power device");
+				return;
+			}
 
-		foreach ($data as $key => $val) {
-			out("  ", TRUE);
-			out(Util::pad_str($key, 16), TRUE);
-			out(": ".$val);
+			$data = $dev->get_sensors($this->pwr_slot);
+			if ($data === NULL) {
+				out("No sensors found");
+				return;
+			}
+
+			foreach ($data as $key => $val) {
+				out("  ", TRUE);
+				out(Util::pad_str($key, 16), TRUE);
+				out(": ".$val);
+			}
 		}
 
 		Log::resume();
